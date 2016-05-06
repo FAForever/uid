@@ -42,5 +42,5 @@ if __name__ == "__main__":
   info = uid.collect_machine_info()
   print(json.dumps(info, sort_keys=True, indent=2, separators=(',', ': ')))
 
-  encoded = uid.encodeUniqueId(1234)
+  #encoded = uid.encodeUniqueId(1234)
   

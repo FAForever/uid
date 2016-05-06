@@ -135,9 +135,6 @@ def collect_machine_info():
     
     exc_value = "invalid"
     if WINDOWS:
-        # hostname
-        machine['hostname'] = platform.node()
-        
         # motherboard
         wmi_c = wmi.WMI()
         machine['motherboard'] = {}
@@ -225,12 +222,6 @@ def collect_machine_info():
             
 
     else:
-        # hostname
-        try:
-            machine['hostname'] = open('/etc/hostname', 'r').read().strip()
-        except:
-            machine['hostname'] = exc_value
-
         # motherboard
         machine['motherboard'] = {}
         for board_trait in ['vendor', 'name']:
@@ -240,7 +231,7 @@ def collect_machine_info():
                 try:
                     machine['motherboard'][board_trait] = open('/sys/class/virtual/dmi/id/board_{}'.format(board_trait), 'r').read().strip()
                 except:
-                    pass
+                    machine['motherboard'][board_trait] = exc_value
                     
         # oem computer name
         try:
@@ -263,10 +254,6 @@ def collect_machine_info():
         # memory
         machine['memory'] = {}
         machine['memory']['serial0'] = exc_value
-        try:
-            machine['memory']['size'] = int(re.findall(r'MemTotal:\s*([0-9]+) kB',open('/proc/meminfo').read())[0]) * 1024
-        except:
-            machine['memory']['size'] = exc_value
 
         # os uuid
         try:
@@ -287,19 +274,18 @@ def collect_machine_info():
         machine['bios'] = {}
         machine['bios']['serial'] = exc_value
         machine['bios']['description'] = exc_value
-        machine['bios']['smbbversion'] = exc_value
         for bios_trait in [('manufacturer','vendor'), 'version', 'date']:
             # bios_trait is 'string' => machine dict key name equals sysfs name suffix
             # bios_trait is 'tuple' => machine dict key name NOT equals sysfs name suffix
-            key = bios_trait if hasattr(bios_trait,'lower') else bios_trait[0]
-            sysfs_suffix = bios_trait if hasattr(bios_trait,'lower') else bios_trait[1]
+            key = bios_trait if hasattr(bios_trait, 'lower') else bios_trait[0]
+            sysfs_suffix = bios_trait if hasattr(bios_trait, 'lower') else bios_trait[1]
             try:
                 machine['bios'][key] = open('/sys/class/dmi/id/bios_{}'.format(sysfs_suffix), 'r').read().strip()
             except:
                 try:
                     machine['bios'][key] = open('/sys/class/virtual/dmi/id/bios_{}'.format(sysfs_suffix), 'r').read().strip()
                 except:
-                    pass
+                    machine['bios'][key] = exc_value
         try:
             # checking dmesg only is fallback, because it's a ring buffer
             # and older information are gone if buffer fills up
@@ -314,28 +300,39 @@ def collect_machine_info():
                     machine['bios']['version'] = dmi_match.group(3)
         except:
             pass
-        # set smbbversion = version since, why not?
+        # set smbbversion = version since, this value is n/a
         machine['bios']['smbbversion'] = machine['bios']['version']
-
-        # disk helper
-        def find_root_uuid_in_devices( devices ):
-            for device in devices:
-                if 'mountpoint' in device:
-                    if device['mountpoint'] == '/':
-                        return device['uuid']
-                if 'children' in device:
-                    output = find_root_uuid_in_devices(device['children'])
-                    if output:
-                        return output
 
         # disk
         machine['disks'] = {}
         machine['disks']['vserial'] = exc_value
         machine['disks']['controller_id'] = exc_value
         try:
-            lsblk_json = subprocess.check_output(['lsblk', '-f', '--json']).decode()
+            lspci_output = subprocess.check_output(('lspci', '-n'))
+            controller_id_match = re.search(r"..:..\..\s0106:\s(....:....)\s", lspci_output.decode(), re.MULTILINE)
+            if controller_id_match:
+                machine['disks']['controller_id'] = controller_id_match.group(1)
+        except:
+            pass
+
+        def is_root_device(device):
+            if 'mountpoint' in device and device['mountpoint'] != None:
+                return device['mountpoint'] == '/'
+            else:
+                result = False
+                if 'children' in device:
+                    for child_dev in device['children']:
+                        result |= is_root_device(child_dev)
+                return result
+
+        try:
+            lsblk_json = subprocess.check_output(['lsblk', '--json', '-o', 'SERIAL,NAME,MOUNTPOINT']).decode()
             lsblk = json.loads(lsblk_json)
-            machine['disks']['serial'] = find_root_uuid_in_devices(lsblk['blockdevices'])
+            for device in lsblk['blockdevices']:
+                if is_root_device(device):
+                    machine['disks']['vserial'] = device['serial']
+                    if machine['disks']['vserial'] is None:
+                        machine['disks']['vserial'] = exc_value
         except:
             pass
 
