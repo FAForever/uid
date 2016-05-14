@@ -20,8 +20,6 @@ from Crypto import Random
 
 from PyQt4.QtGui import QApplication
 
-import uid.rsakeys
-
 def decodeUniqueId(serialized_uniqueid, session):
     try:
         message = (base64.b64decode(serialized_uniqueid)).decode('utf-8')
@@ -34,22 +32,26 @@ def decodeUniqueId(serialized_uniqueid, session):
         encoded = message[24:-40]
         key = (base64.b64decode(message[-40:]))
 
-        private_key = rsa.PrivateKey(rsakeys.n, 
-                                     rsakeys.e,
-                                     rsakeys.d,
-                                     rsakeys.p,
-                                     rsakeys.q)
+        # The JSON string is AES encrypted
+        # first decrypt the AES key with our rsa private key
+        private_key = rsa.PrivateKey(13731707816857396218511477189051880183926672022487649441793167544537,
+                                     65537  ,
+                                     13257759923579836515652436320509365545753327507215179875192524262973,
+                                     559894335379760802227172596053317511,
+                                     24525534460968531815139548638367)
         AESkey = rsa.decrypt(key, private_key)
 
-        # What the hell is this?
+        # now decrypt the message
         cipher = AES.new(AESkey, AES.MODE_CBC, iv)
         DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).decode('utf-8')
         decoded = DecodeAES(cipher, encoded)[:-trailing]
+
+        # since the legacy uid.dll generated JSON is flawed,
+        # there's a new JSON format, starting with '2' as magic byte
         if decoded.startswith('2'):
             data = json.loads(decoded[1:])
-            
-            if str(data["session"]) != str(session) :
-                self.sendJSON(dict(command="notice", style="error", text="Your session is corrupted. Try relogging"))
+            if str(data["session"]) != str(self.session) :
+                print(dict(command="notice", style="error", text="Your session is corrupted. Try relogging"))
                 return None
             UUID = data['machine']['uuid']
             mem_SerialNumber = data['machine']['memory']['serial0']
@@ -60,7 +62,9 @@ def decodeUniqueId(serialized_uniqueid, session):
             SMBIOSBIOSVersion = data['machine']['bios']['smbbversion']
             SerialNumber = data['machine']['bios']['serial']
             VolumeSerialNumber = data['machine']['disks']['vserial']
-        else:        
+        else:
+            # the old JSON format contains unescaped backspaces in the device id
+            # of the IDE controller, which now needs to be corrected to get valid JSON
             regexp = re.compile(r'[0-9a-zA-Z\\]("")')
             decoded = regexp.sub('"', decoded)
             decoded = decoded.replace("\\", "\\\\")
@@ -68,37 +72,41 @@ def decodeUniqueId(serialized_uniqueid, session):
             decoded = regexp.sub('', decoded)
             jstring = json.loads(decoded)
 
-            if str(jstring["session"]) != str(session) :
+            if str(jstring["session"]) != str(self.session) :
                 self.sendJSON(dict(command="notice", style="error", text="Your session is corrupted. Try relogging"))
                 return None
 
             machine = jstring["machine"]
 
             UUID = str(machine.get('UUID', 0)).encode()
-            mem_SerialNumber = str(machine.get('mem_SerialNumber', 0)).encode()
-            DeviceID = str(machine.get('DeviceID', 0)).encode()
-            Manufacturer = str(machine.get('Manufacturer', 0)).encode()
-            Name = str(machine.get('Name', 0)).encode()
+            mem_SerialNumber = str(machine.get('mem_SerialNumber', 0)).encode()  # serial number of first memory module
+            DeviceID = str(machine.get('DeviceID', 0)).encode() # device id of the IDE controller
+            Manufacturer = str(machine.get('Manufacturer', 0)).encode() # BIOS manufacturer
+            Name = str(machine.get('Name', 0)).encode() # verbose processor name
             ProcessorId = str(machine.get('ProcessorId', 0)).encode()
             SMBIOSBIOSVersion = str(machine.get('SMBIOSBIOSVersion', 0)).encode()
-            SerialNumber = str(machine.get('SerialNumber', 0)).encode()
-            VolumeSerialNumber = str(machine.get('VolumeSerialNumber', 0)).encode()
+            SerialNumber = str(machine.get('SerialNumber', 0)).encode() # BIOS serial number
+            VolumeSerialNumber = str(machine.get('VolumeSerialNumber', 0)).encode() # https://www.raymond.cc/blog/changing-or-spoofing-hard-disk-hardware-serial-number-and-volume-id/
+
+            for i in machine.values() :
+                low = i.lower()
+                if "vmware" in low or "virtual" in low or "innotek" in low or "qemu" in low or "parallels" in low or "bochs" in low :
+                    return "VM"
+
         m = hashlib.md5()
         m.update(UUID + mem_SerialNumber + DeviceID + Manufacturer + Name + ProcessorId + SMBIOSBIOSVersion + SerialNumber + VolumeSerialNumber)
 
         return m.hexdigest(), (UUID, mem_SerialNumber, DeviceID, Manufacturer, Name, ProcessorId, SMBIOSBIOSVersion, SerialNumber, VolumeSerialNumber)
     except Exception as ex:
-        import traceback
-        print("Exception in decodeUniqueId:", ex)
-        traceback.print_exc()
+        print(ex)
 
 def encodeUniqueId(session):
-    info = {'machine': uid.collect_machine_info(),
+    info = {'machine': collect_machine_info(),
             'session': session}
             
     #prefix the JSON string with Magic byte '2' to indicate the new uid data format for the server
     json_string = '2' + json.dumps(info)
-    public_key = rsa.PublicKey(rsakeys.n, rsakeys.e)
+    public_key = rsa.PublicKey(13731707816857396218511477189051880183926672022487649441793167544537, 65537  )
     iv = Random.get_random_bytes(16)
     ivb64 = base64.b64encode(iv)
     assert (len(ivb64) == 24)
