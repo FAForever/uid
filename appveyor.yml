@@ -1,27 +1,25 @@
+version: 1.0.{build}
 environment:
-
-  matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.11"
-      PYTHON_ARCH: "32"
-      n: 13731707816857396218511477189051880183926672022487649441793167544537
-      e: 65537
-
-init:
-  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH% %QTIMPL%"
-
+  e:
+    secure: y0WQqkPEC4eaCc3fr/b4HA==
+  n:
+    secure: /uv7YxWVLhhE3bs4nPQrHYp3G6EaNd8ZNOkPI+0aZPATvpBfjKupJQTCZY82savG9yi9VGBSxpVNKiesYzDczxUUFhk4neDZhTBKVR8kREw=
 install:
-  - "C:\\Python27\\python -u appveyor\\install_qt.py"
-  - ps: (new-object net.webclient).DownloadFile('http://nuitka.net/releases/Nuitka-5.1.211.win32.py27.msi', 'nuitka.msi')
-  - ps: msiexec /i nuitka.msi /quiet /qn /norestart /log install.log
-  - "%PYTHON%\\Scripts\\pip.exe install -r requirements.txt
+- ps: >-
 
-test_script:
-  
-after_test:
-  - "powershell -ExecutionPolicy ByPass -File .\build.ps1"
+    C:\\Python27\\python -m pip install --upgrade pip
+    
+    C:\\Python27\\Scripts\\pip.exe install -r requirements.txt
+build_script:
+- ps: >-
+    (Get-Content .\uid\__init__.py) -replace '13731707816857396218511477189051880183926672022487649441793167544537', "$env:n" | Set-Content .\uid\__init__.py
 
+    (Get-Content .\uid\__init__.py) -replace '65537', "$env:e" | Set-Content .\uid\__init__.py
+
+    C:\Python27\Scripts\nuitka.bat --recurse-to=rsa --recurse-not-to=pyasn1.type --recurse-not-to=Crypto --recurse-not-to=pyasn1.codec.der --recurse-not-to=win32com.client --recurse-to=wmi --module uid --output-dir=build --remove-output
+
+    (Get-Content .\uid\__init__.py) -replace "$env:n", '13731707816857396218511477189051880183926672022487649441793167544537' | Set-Content .\uid\__init__.py
+
+    (Get-Content .\uid\__init__.py) -replace "$env:e", '65537' | Set-Content .\uid\__init__.py
 artifacts:
-  - path: 'build\uid.pyd'
-
-build: off
+- path: ./build/uid.pyd
