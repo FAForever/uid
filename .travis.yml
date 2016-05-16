@@ -11,7 +11,7 @@ install:
 - sudo apt-get update
 - sudo apt-get install -y python-qt4 nuitka python-crypto python-rsa python-pytest
 script:
-- py.test -vv --full-trace
+- py.test
 - sed -i "s,13731707816857396218511477189051880183926672022487649441793167544537,$n,g"
   './uid/__init__.py'
 - sed -i "s,65537,$e,g" './uid/__init__.py'
