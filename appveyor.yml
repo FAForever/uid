@@ -6,8 +6,6 @@ environment:
     secure: /uv7YxWVLhhE3bs4nPQrHYp3G6EaNd8ZNOkPI+0aZPATvpBfjKupJQTCZY82savG9yi9VGBSxpVNKiesYzDczxUUFhk4neDZhTBKVR8kREw=
 install:
 - ps: >-
-    C:\\Python27\\python -u appveyor\\install_qt.py
-
     C:\\Python27\\python -m pip install --upgrade pip
 
     C:\\Python27\\Scripts\\pip.exe install -r requirements.txt
