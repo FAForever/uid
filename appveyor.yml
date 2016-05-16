@@ -6,24 +6,24 @@ environment:
     secure: /uv7YxWVLhhE3bs4nPQrHYp3G6EaNd8ZNOkPI+0aZPATvpBfjKupJQTCZY82savG9yi9VGBSxpVNKiesYzDczxUUFhk4neDZhTBKVR8kREw=
 install:
 - ps: >-
-    C:\\Python27\\python -m pip install --upgrade pip
+    C:\Miniconda\Scripts\pip install -r requirements.txt
 
-    C:\\Python27\\Scripts\\pip.exe install -r requirements.txt
+    C:\Miniconda\Scripts\pip install -r requirements_win.txt
 
-    C:\\Python27\\Scripts\\pip.exe install -r requirements_win.txt
+    C:\Miniconda\Scripts\conda install pyqt
 build_script:
 - ps: >-
     (Get-Content .\uid\__init__.py) -replace '13731707816857396218511477189051880183926672022487649441793167544537', "$env:n" | Set-Content .\uid\__init__.py
 
     (Get-Content .\uid\__init__.py) -replace '65537', "$env:e" | Set-Content .\uid\__init__.py
 
-    C:\Python27\Scripts\nuitka.bat --recurse-to=rsa --recurse-not-to=pyasn1.type --recurse-not-to=Crypto --recurse-not-to=pyasn1.codec.der --recurse-not-to=win32com.client --recurse-to=wmi --module uid --output-dir=build --remove-output
+    C:\Miniconda\Scripts\nuitka --recurse-to=rsa --recurse-not-to=pyasn1.type --recurse-not-to=Crypto --recurse-not-to=pyasn1.codec.der --recurse-not-to=win32com.client --recurse-to=wmi --module uid --output-dir=build --remove-output
 
     (Get-Content .\uid\__init__.py) -replace "$env:n", '13731707816857396218511477189051880183926672022487649441793167544537' | Set-Content .\uid\__init__.py
 
     (Get-Content .\uid\__init__.py) -replace "$env:e", '65537' | Set-Content .\uid\__init__.py
 test_script:
-- cmd: C:\\Python27\\Scripts\\py.test.exe -vv --full-trace
+- cmd: C:\Miniconda\Scripts\py.test -vv --full-trace
 artifacts:
 - path: ./build/uid.pyd
 deploy:
