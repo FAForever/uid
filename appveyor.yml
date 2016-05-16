@@ -26,8 +26,9 @@ test_script:
 - cmd: C:\Miniconda\Scripts\py.test -vv --full-trace
 artifacts:
 - path: ./build/uid.pyd
+  name: uid_windows_binary
 deploy:
 - provider: GitHub
   auth_token:
     secure: OnBDCRKgFEo0gcsSFEdPd7oPcZQMIMBb9lzkNRcYMK3WAHaR34WnBKwLBCsDBSgj
-  artifact: uid.pyd
+  artifact: uid_windows_binary
