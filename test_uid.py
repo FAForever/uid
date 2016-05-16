@@ -8,7 +8,7 @@ def test_info_content():
   assert('uuid' in info)
   assert('serial0' in info['memory'])
   assert('controller_id' in info['disks'])
-  assert('manufacturer' in info)
+  assert('manufacturer' in info['bios'])
   assert('name' in info['processor'])
   assert('id' in info['processor'])
   assert('smbbversion' in info['bios'])
