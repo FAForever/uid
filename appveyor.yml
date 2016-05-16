@@ -6,11 +6,11 @@ environment:
     secure: /uv7YxWVLhhE3bs4nPQrHYp3G6EaNd8ZNOkPI+0aZPATvpBfjKupJQTCZY82savG9yi9VGBSxpVNKiesYzDczxUUFhk4neDZhTBKVR8kREw=
 install:
 - ps: >-
-    C:\Miniconda\Scripts\pip install -r requirements.txt
+    C:\Miniconda\Scripts\pip install --quiet -r requirements.txt
 
-    C:\Miniconda\Scripts\pip install -r requirements_win.txt
+    C:\Miniconda\Scripts\pip install --quiet -r requirements_win.txt
 
-    C:\Miniconda\Scripts\conda install -y pyqt pywin32
+    C:\Miniconda\Scripts\conda install --quiet -y pyqt pywin32
 build_script:
 - ps: >-
     (Get-Content .\uid\__init__.py) -replace '13731707816857396218511477189051880183926672022487649441793167544537', "$env:n" | Set-Content .\uid\__init__.py
