@@ -1,0 +1,24 @@
+language: python
+
+python:
+  - "2.7_with_system_site_packages"
+
+install:
+  - "sudo apt-get update"
+  - "sudo apt-get install python-qt4 nuitka python-crypto python-rsa python-pytest"
+
+script:
+  - py.test -vv --full-trace
+  - sed -i "s,13731707816857396218511477189051880183926672022487649441793167544537,$n,g" './uid/__init__.py'
+  - sed -i "s,65537,$e,g" './uid/__init__.py'
+  - nuitka --python-version='2.7' --recurse-to=rsa --module uid --output-dir=build --remove-output
+  - sed -i "s,$n,13731707816857396218511477189051880183926672022487649441793167544537,g" './uid/__init__.py'
+  - sed -i "s,$e,65537,g" './uid/__init__.py'
+
+after_success:
+  - coveralls
+
+addons:
+  artifacts:
+    paths:
+    - "./build/uid.so"
