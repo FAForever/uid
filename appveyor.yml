@@ -22,3 +22,8 @@ build_script:
     (Get-Content .\uid\__init__.py) -replace "$env:e", '65537' | Set-Content .\uid\__init__.py
 artifacts:
 - path: ./build/uid.pyd
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: OnBDCRKgFEo0gcsSFEdPd7oPcZQMIMBb9lzkNRcYMK3WAHaR34WnBKwLBCsDBSgj
+  artifact: uid.pyd
