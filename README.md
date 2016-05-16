@@ -4,6 +4,8 @@ This Python module collects RSA encrypted user information.
 
 It is used as compiled Python extension in the [FA Forever client](https://github.com/FAForever/client) to prevent [smurfing](http://www.urbandictionary.com/define.php?term=smurfing).
 
+[![Build status](https://ci.appveyor.com/api/projects/status/kpphf58np8vd72rw?svg=true)](https://ci.appveyor.com/project/muellni/uid)
+
 ## Build instructions
 You need:
 * [nuitka](https://nuitka.net/)
