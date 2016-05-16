@@ -173,7 +173,10 @@ def collect_machine_info():
         # memory
         machine['memory'] = {}
         try:
-            machine['memory']['serial0'] = wmi_c.Win32_PhysicalMemory()[0].SerialNumber
+            if wmi_c.Win32_PhysicalMemory()[0].SerialNumber:
+                machine['memory']['serial0'] = wmi_c.Win32_PhysicalMemory()[0].SerialNumber
+            else:
+                machine['memory']['serial0'] = exc_value
         except:
             machine['memory']['serial0'] = exc_value
 
