@@ -10,6 +10,10 @@ env:
 install:
 - sudo apt-get update
 - sudo apt-get install -y python-qt4 nuitka python-crypto python-rsa python-pytest
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 script:
 - py.test
 - sed -i "s,13731707816857396218511477189051880183926672022487649441793167544537,$n,g"
