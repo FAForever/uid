@@ -1,28 +1,31 @@
 language: python
-
 sudo: required
-
 dist: trusty
-
 python:
-  - "2.7_with_system_site_packages"
-
+- 2.7_with_system_site_packages
+env:
+  global:
+  - secure: H/eCCsx+vXaCzVbR9A1wan4uOefBqBS8RFpsQQzQ0U5SMDKjmJidSfLNcNVb/usP/KC5XH8lqicFJdhyICu4b7wd2amt9xMYXsmI5Ys6TuY6rWPJqwzt9E1ilt9MvZLQW6eJweVwmj9v8HRZfOw9yF7EbEuXpSQiIpdjg++hUSYqOZYE3Ln6ka0aOkCe9p4lkI8qalWkXebejUi/7rltGxLq5xYpDGPB4dnvzXX2t2xjbBK1otpcNPLJKyqVyIe0GN+/vTI/0btE26QOo8GTFDdVgrB8X6VuL0hlyYgIr7K2guEZkvI0Akct+R8Aojt9Wic3BzYe81K8VDYcy9i6w49GgzCIWnUPHAzTVHoSE7QVEh06NBhviLdUrEB7swDisu6zgdRO4RMfQL6MxcFLfWedK097ep3nXjjYr8+f3MhXAaHwaJh0/sKfRYDjSx0BIkkrWRTLJLG8rzZd4N5OpiHnnNEJwCIsCk8i/rM8jZ9TGbFzqbtkXyYu9xIUCpg8HTe5FdQ1Q0eJ4Vx4S2lwhycgG/9bhK+fPa47SQgzrBgNnTVTedXqJ0FumTMgmvotrtxySZJJpUVzWLTC9MjNRBj1WL+oJZIjUbVHbTd8KlcyKs4gSVGy3yFokyyuYtvNQm9B7gv+SPHKViFg1LHs+7D0ST1zutse4qgxvGnlKVc=
+  - secure: Q6yKqc1IM4pfguF2JIEuAJSiDgq7rP8MukpjCkDpUIOnrItF8RgHIo389quG10m1Hpc+1l1ojv7/EhePX0JSvZGbIcfgN5WcNNeOco8U3v3CaoyocxaQdNElAFHQO88+kFYx7yP6N7qT5Y18FsjSri1X91aYZrhvp4CnzmS6AA5HhO2rXXYqulYTq1o78IlJf2idf0/t4YoqKha9Sa/CB8l2qkjoaoc7pCaw+qHzl8PpeD/H9Y3KHTUa2Xd8y+W2x18wvC17NC20ScSChhGvAns8IWPFXQVt93UCWKxKKSQFwvyuf8Lxog5ZJTeB3JvrGSD0Zu/YgtMZgD0mj7LWKhB01Hbx5A2w1aiEDQiBiB2y0zIfBXKf+XtNvinjsQteyL9/XM6TQTSRTF3meHBJogUJBM63tPWwn9KJghCZyCEO/4hOfGiCtmNuhJIWou/BSnHQAXZb5+ERF5ahuCh9/520crGzcyydTiTxV7XnJ1zfUYvJn8KlWSaACYU35ZdiS/vO9Rrf1wIX1Dkc5Hh64SzTAODZpDEMwgEsU3qfl2kaKRdSHVzAt7EhBh8MffZ6n4WE1MMSOMBq4DohrodfPP3Fxp4N3Kj7aw8EQxJoeKiVWmTImcuTBJFGEi7ysde9VZDVgN2rQ1bg04PY1zCt6fyy1XaBPTO5P9yj69SJqjw=
 install:
-  - "sudo apt-get update"
-  - "sudo apt-get install -y python-qt4 nuitka python-crypto python-rsa python-pytest"
-
+- sudo apt-get update
+- sudo apt-get install -y python-qt4 nuitka python-crypto python-rsa python-pytest
 script:
-  - py.test -vv --full-trace
-  - sed -i "s,13731707816857396218511477189051880183926672022487649441793167544537,$n,g" './uid/__init__.py'
-  - sed -i "s,65537,$e,g" './uid/__init__.py'
-  - nuitka --python-version='2.7' --recurse-to=rsa --module uid --output-dir=build --remove-output
-  - sed -i "s,$n,13731707816857396218511477189051880183926672022487649441793167544537,g" './uid/__init__.py'
-  - sed -i "s,$e,65537,g" './uid/__init__.py'
-
+- py.test -vv --full-trace
+- sed -i "s,13731707816857396218511477189051880183926672022487649441793167544537,$n,g"
+  './uid/__init__.py'
+- sed -i "s,65537,$e,g" './uid/__init__.py'
+- nuitka --python-version='2.7' --recurse-to=rsa --module uid --output-dir=build --remove-output
+- sed -i "s,$n,13731707816857396218511477189051880183926672022487649441793167544537,g"
+  './uid/__init__.py'
+- sed -i "s,$e,65537,g" './uid/__init__.py'
 after_success:
-  - coveralls
-
-addons:
-  artifacts:
-    paths:
-    - "./build/uid.so"
+- coveralls
+deploy:
+  provider: releases
+  api_key:
+    secure: "s55fyoMapJtoQPRobyUF2S8qvHMvY9e2XrIfCSmU8PchWHGWl06Q+CSXaE4uaaj3qjlMt+XswZ8fy9VkIaTEW6V1TrY9lvT3pCEu1nrBhHc3p1iaaJZCgq6tUkbeoGqrW4Ln9r10+eDU0atsmJiMifYsvWTnjmXeJi9MgHNP4H/xPzLwRA8vcn/Y1N5xKkvvvA6iA8G9N7qjP3OCASaq6vHv5wnpoINAmMNBN0YUofvyV2Y7+n7wIuLBX/35PamOah8EZ8tu/P4PqbPZdsnau29QsNqRI3y1Qz1l20pVoThO0VQWjLeSCvTIIfjy1ZIEnXxCMP19Bh/Kg5JEi4CYdvExJmfgdrft4766iaUo5ZlFXiUxpsYyD3CH7TR2At5qLRwsQ0CA5i4a0W5PxqZYU2EpCjMvJDFk3iYSfd3y3izQ9n0glk1YzyvyaBxKfehDwHaVN2ZnHnwpB1vJgcmYp+jWiQU6/UPbo4W4qMdjSMXeZmmzGfI4/DIyx1BzMazxrpg5JkhJasU811beApWcNWrHxqem5j8Nvig4fVMRCYFCxKp6Q/TeDqAVh6B5q3gInlu0p7nyeiBXLWEshYSJxTy9Qyi9T4AiDGC/GpJ19XyxYniwGWnaKbSZ/E/tgFuU70zgjoX/ohvz/ZCxGcitYYKwy8wz3s3ExoWA3wL03Sc="
+  file: "./build/uid.so"
+  skip_cleanup: true
+  on:
+    tags: true
