@@ -19,91 +19,91 @@ from Crypto.Cipher import AES
 from Crypto import Random
 
 from PyQt4.QtGui import QApplication
+qApp = QApplication.instance()
+if not qApp:
+    qApp = QApplication(sys.argv)
 
 def decodeUniqueId(serialized_uniqueid, session):
-    try:
-        message = (base64.b64decode(serialized_uniqueid)).decode('utf-8')
+    message = (base64.b64decode(serialized_uniqueid)).decode('utf-8')
 
-        trailing = ord(message[0])
+    trailing = ord(message[0])
 
-        message = message[1:]
+    message = message[1:]
 
-        iv = (base64.b64decode(message[:24]))
-        encoded = message[24:-40]
-        key = (base64.b64decode(message[-40:]))
+    iv = (base64.b64decode(message[:24]))
+    encoded = message[24:-40]
+    key = (base64.b64decode(message[-40:]))
 
-        # The JSON string is AES encrypted
-        # first decrypt the AES key with our rsa private key
-        private_key = rsa.PrivateKey(13731707816857396218511477189051880183926672022487649441793167544537,
-                                     65537  ,
-                                     13257759923579836515652436320509365545753327507215179875192524262973,
-                                     559894335379760802227172596053317511,
-                                     24525534460968531815139548638367)
-        AESkey = rsa.decrypt(key, private_key)
+    # The JSON string is AES encrypted
+    # first decrypt the AES key with our rsa private key
+    private_key = rsa.PrivateKey(13731707816857396218511477189051880183926672022487649441793167544537,
+                                 65537  ,
+                                 13257759923579836515652436320509365545753327507215179875192524262973,
+                                 559894335379760802227172596053317511,
+                                 24525534460968531815139548638367)
+    AESkey = rsa.decrypt(key, private_key)
 
-        # now decrypt the message
-        cipher = AES.new(AESkey, AES.MODE_CBC, iv)
-        DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).decode('utf-8')
-        decoded = DecodeAES(cipher, encoded)[:-trailing]
+    # now decrypt the message
+    cipher = AES.new(AESkey, AES.MODE_CBC, iv)
+    DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).decode('utf-8')
+    decoded = DecodeAES(cipher, encoded)[:-trailing]
 
-        # since the legacy uid.dll generated JSON is flawed,
-        # there's a new JSON format, starting with '2' as magic byte
-        if decoded.startswith('2'):
-            data = json.loads(decoded[1:])
-            if str(data["session"]) != str(self.session) :
-                print(dict(command="notice", style="error", text="Your session is corrupted. Try relogging"))
-                return None
-            UUID = data['machine']['uuid']
-            mem_SerialNumber = data['machine']['memory']['serial0']
-            DeviceID = data['machine']['disks']['controller_id']
-            Manufacturer = data['machine']['bios']['manufacturer']
-            Name = data['machine']['processor']['name']
-            ProcessorId = data['machine']['processor']['id']
-            SMBIOSBIOSVersion = data['machine']['bios']['smbbversion']
-            SerialNumber = data['machine']['bios']['serial']
-            VolumeSerialNumber = data['machine']['disks']['vserial']
-        else:
-            # the old JSON format contains unescaped backspaces in the device id
-            # of the IDE controller, which now needs to be corrected to get valid JSON
-            regexp = re.compile(r'[0-9a-zA-Z\\]("")')
-            decoded = regexp.sub('"', decoded)
-            decoded = decoded.replace("\\", "\\\\")
-            regexp = re.compile('[^\x09\x0A\x0D\x20-\x7F]')
-            decoded = regexp.sub('', decoded)
-            jstring = json.loads(decoded)
+    # since the legacy uid.dll generated JSON is flawed,
+    # there's a new JSON format, starting with '2' as magic byte
+    if decoded.startswith('2'):
+        data = json.loads(decoded[1:])
+        if str(data["session"]) != str(session) :
+            print(dict(command="notice", style="error", text="Your session is corrupted. Try relogging"))
+            return None
+        UUID = data['machine']['uuid']
+        mem_SerialNumber = data['machine']['memory']['serial0']
+        DeviceID = data['machine']['disks']['controller_id']
+        Manufacturer = data['machine']['bios']['manufacturer']
+        Name = data['machine']['processor']['name']
+        ProcessorId = data['machine']['processor']['id']
+        SMBIOSBIOSVersion = data['machine']['bios']['smbbversion']
+        SerialNumber = data['machine']['bios']['serial']
+        VolumeSerialNumber = data['machine']['disks']['vserial']
+    else:
+        # the old JSON format contains unescaped backspaces in the device id
+        # of the IDE controller, which now needs to be corrected to get valid JSON
+        regexp = re.compile(r'[0-9a-zA-Z\\]("")')
+        decoded = regexp.sub('"', decoded)
+        decoded = decoded.replace("\\", "\\\\")
+        regexp = re.compile('[^\x09\x0A\x0D\x20-\x7F]')
+        decoded = regexp.sub('', decoded)
+        jstring = json.loads(decoded)
 
-            if str(jstring["session"]) != str(self.session) :
-                self.sendJSON(dict(command="notice", style="error", text="Your session is corrupted. Try relogging"))
-                return None
+        if str(jstring["session"]) != str(session) :
+            #self.sendJSON(dict(command="notice", style="error", text="Your session is corrupted. Try relogging"))
+            return None
 
-            machine = jstring["machine"]
+        machine = jstring["machine"]
 
-            UUID = str(machine.get('UUID', 0)).encode()
-            mem_SerialNumber = str(machine.get('mem_SerialNumber', 0)).encode()  # serial number of first memory module
-            DeviceID = str(machine.get('DeviceID', 0)).encode() # device id of the IDE controller
-            Manufacturer = str(machine.get('Manufacturer', 0)).encode() # BIOS manufacturer
-            Name = str(machine.get('Name', 0)).encode() # verbose processor name
-            ProcessorId = str(machine.get('ProcessorId', 0)).encode()
-            SMBIOSBIOSVersion = str(machine.get('SMBIOSBIOSVersion', 0)).encode()
-            SerialNumber = str(machine.get('SerialNumber', 0)).encode() # BIOS serial number
-            VolumeSerialNumber = str(machine.get('VolumeSerialNumber', 0)).encode() # https://www.raymond.cc/blog/changing-or-spoofing-hard-disk-hardware-serial-number-and-volume-id/
+        UUID = str(machine.get('UUID', 0)).encode()
+        mem_SerialNumber = str(machine.get('mem_SerialNumber', 0)).encode()  # serial number of first memory module
+        DeviceID = str(machine.get('DeviceID', 0)).encode() # device id of the IDE controller
+        Manufacturer = str(machine.get('Manufacturer', 0)).encode() # BIOS manufacturer
+        Name = str(machine.get('Name', 0)).encode() # verbose processor name
+        ProcessorId = str(machine.get('ProcessorId', 0)).encode()
+        SMBIOSBIOSVersion = str(machine.get('SMBIOSBIOSVersion', 0)).encode()
+        SerialNumber = str(machine.get('SerialNumber', 0)).encode() # BIOS serial number
+        VolumeSerialNumber = str(machine.get('VolumeSerialNumber', 0)).encode() # https://www.raymond.cc/blog/changing-or-spoofing-hard-disk-hardware-serial-number-and-volume-id/
 
-            for i in machine.values() :
-                low = i.lower()
-                if "vmware" in low or "virtual" in low or "innotek" in low or "qemu" in low or "parallels" in low or "bochs" in low :
-                    return "VM"
+        for i in machine.values() :
+            low = i.lower()
+            if "vmware" in low or "virtual" in low or "innotek" in low or "qemu" in low or "parallels" in low or "bochs" in low :
+                return "VM"
 
-        m = hashlib.md5()
-        m.update(UUID + mem_SerialNumber + DeviceID + Manufacturer + Name + ProcessorId + SMBIOSBIOSVersion + SerialNumber + VolumeSerialNumber)
+    m = hashlib.md5()
+    m.update(UUID + mem_SerialNumber + DeviceID + Manufacturer + Name + ProcessorId + SMBIOSBIOSVersion + SerialNumber + VolumeSerialNumber)
 
-        return m.hexdigest(), (UUID, mem_SerialNumber, DeviceID, Manufacturer, Name, ProcessorId, SMBIOSBIOSVersion, SerialNumber, VolumeSerialNumber)
-    except Exception as ex:
-        print(ex)
+    return m.hexdigest(), (UUID, mem_SerialNumber, DeviceID, Manufacturer, Name, ProcessorId, SMBIOSBIOSVersion, SerialNumber, VolumeSerialNumber)
 
 def encodeUniqueId(session):
     info = {'machine': collect_machine_info(),
             'session': session}
-            
+
     #prefix the JSON string with Magic byte '2' to indicate the new uid data format for the server
     json_string = '2' + json.dumps(info)
     public_key = rsa.PublicKey(13731707816857396218511477189051880183926672022487649441793167544537, 65537  )
@@ -135,12 +135,9 @@ def encodeUniqueId(session):
 
 def collect_machine_info():
     machine = {}
-    a = QApplication.instance()
-    if not a:
-        a = QApplication(sys.argv)
-    desktop_size = QApplication.desktop().screenGeometry()
+    desktop_size = qApp.desktop().screenGeometry()
     machine['desktop'] = {'width':desktop_size.width(), 'height':desktop_size.height()}
-    
+
     exc_value = "invalid"
     if WINDOWS:
         # motherboard
@@ -162,7 +159,7 @@ def collect_machine_info():
         except:
             machine['model'] = exc_value
             machine['manufacturer'] = exc_value
-        
+
         # processor
         machine['processor'] = {}
         try:
@@ -172,7 +169,7 @@ def collect_machine_info():
         except:
             machine['processor']['name'] = exc_value
             machine['processor']['id'] = exc_value
-        
+
         # memory
         machine['memory'] = {}
         try:
@@ -227,7 +224,6 @@ def collect_machine_info():
             machine['disks']['controller_id'] = controllerinfo.DeviceID
         except:
             machine['disks']['controller_id'] = exc_value
-            
 
     else:
         # motherboard
@@ -240,7 +236,7 @@ def collect_machine_info():
                     machine['motherboard'][board_trait] = open('/sys/class/virtual/dmi/id/board_{}'.format(board_trait), 'r').read().strip()
                 except:
                     machine['motherboard'][board_trait] = exc_value
-                    
+
         # oem computer name
         try:
             machine['manufacturer'] = open('/sys/class/dmi/id/sys_vendor', 'r').read().strip()
@@ -255,7 +251,7 @@ def collect_machine_info():
         machine['processor'] = {}
         machine['processor']['id'] = exc_value
         try:
-            machine['processor']['name'] = re.findall(r'model name\s*: (.*)',open('/proc/cpuinfo').read())[0] 
+            machine['processor']['name'] = re.findall(r'model name\s*: (.*)',open('/proc/cpuinfo').read())[0]
         except:
             machine['processor']['name'] = exc_value
 
