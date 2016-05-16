@@ -2,3 +2,4 @@ wmi
 pycrypto
 rsa
 nuitka
+pytest

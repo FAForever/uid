@@ -1,6 +1,7 @@
 #!/usr/bin/env python2 
 
 def test_info_content():
+  """Check for required fields"""
   import uid
   info = uid.collect_machine_info()
   
@@ -15,6 +16,7 @@ def test_info_content():
   assert('vserial' in info['disks'])
 
 def test_decode():
+  """Check JSON encryption, decryption and match of the JSON fields"""
   import uid
   session = 1234
   encoded = uid.encodeUniqueId(session)
