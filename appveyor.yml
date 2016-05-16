@@ -20,6 +20,8 @@ build_script:
     (Get-Content .\uid\__init__.py) -replace "$env:n", '13731707816857396218511477189051880183926672022487649441793167544537' | Set-Content .\uid\__init__.py
 
     (Get-Content .\uid\__init__.py) -replace "$env:e", '65537' | Set-Content .\uid\__init__.py
+test_script:
+- cmd: C:\\Python27\\Scripts\\py.test.exe -vv --full-trace
 artifacts:
 - path: ./build/uid.pyd
 deploy:
