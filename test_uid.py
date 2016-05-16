@@ -24,15 +24,15 @@ def test_decode():
     
   info = uid.collect_machine_info()
   
-  assert(UUID == info['uuid'])
-  assert(mem_SerialNumber == info['memory']['serial0'])
-  assert(DeviceID == info['disks']['controller_id'])
-  assert(Manufacturer == info['bios']['manufacturer'])
-  assert(Name == info['processor']['name'])
-  assert(ProcessorId == info['processor']['id'])
-  assert(SMBIOSBIOSVersion == info['bios']['smbbversion'])
-  assert(SerialNumber == info['bios']['serial'])
-  assert(VolumeSerialNumber == info['disks']['vserial'])
+  assert(UUID == str(info['uuid']).encode())
+  assert(mem_SerialNumber == str(info['memory']['serial0']).encode())
+  assert(DeviceID == str(info['disks']['controller_id']).encode())
+  assert(Manufacturer == str(info['bios']['manufacturer']).encode())
+  assert(Name == str(info['processor']['name']).encode())
+  assert(ProcessorId == str(info['processor']['id']).encode())
+  assert(SMBIOSBIOSVersion == str(info['bios']['smbbversion']).encode())
+  assert(SerialNumber == str(info['bios']['serial']).encode())
+  assert(VolumeSerialNumber == str(info['disks']['vserial']).encode())
 
 
 if __name__ == "__main__":
