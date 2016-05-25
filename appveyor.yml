@@ -1,5 +1,7 @@
 version: 1.0.{build}
+skip_non_tags: true
 environment:
+
   e:
     secure: y0WQqkPEC4eaCc3fr/b4HA==
   n:
