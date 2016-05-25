@@ -1,5 +1,7 @@
 version: win32-{build}
-skip_non_tags: true
+branches:
+  only:
+    - master
 environment:
 
   e:
