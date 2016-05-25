@@ -1,4 +1,4 @@
-version: 1.0.{build}
+version: win32-{build}
 skip_non_tags: true
 environment:
 
