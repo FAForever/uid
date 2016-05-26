@@ -1,9 +1,9 @@
 version: win32-{build}
 environment:
-  e:
-    secure: y0WQqkPEC4eaCc3fr/b4HA==
   n:
-    secure: /uv7YxWVLhhE3bs4nPQrHYp3G6EaNd8ZNOkPI+0aZPATvpBfjKupJQTCZY82savG9yi9VGBSxpVNKiesYzDczxUUFhk4neDZhTBKVR8kREw=
+    secure: zauy6DWrhZv/OgNsvdiIkPaT02Tc2ZAhXw5OE8FWS+4+yHt+P4KbZCaGbRZo9dZ+qTt9jcw2igDuRYiH6GPE0aft7y3/lQ93VnHAtfR3E+E=
+  e:
+    secure: MUEbYxEMAmV/rJZNG/M8TA==
 install:
 - ps: >-
     C:\Miniconda\Scripts\pip install --quiet -r requirements.txt
