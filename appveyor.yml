@@ -1,4 +1,4 @@
-version: win32-{build}
+version: appveyor-win32-{build}
 environment:
   e:
     secure: y0WQqkPEC4eaCc3fr/b4HA==
