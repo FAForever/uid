@@ -1,9 +1,5 @@
 version: win32-{build}
-branches:
-  only:
-    - master
 environment:
-
   e:
     secure: y0WQqkPEC4eaCc3fr/b4HA==
   n:
@@ -37,6 +33,3 @@ deploy:
     secure: OnBDCRKgFEo0gcsSFEdPd7oPcZQMIMBb9lzkNRcYMK3WAHaR34WnBKwLBCsDBSgj
   artifact: uid_windows_binary
   tag: $(APPVEYOR_REPO_TAG_NAME)
-  on:
-    branch: master
-    appveyor_repo_tag: true
