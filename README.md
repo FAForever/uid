@@ -4,8 +4,8 @@ This Python module collects RSA encrypted user information.
 
 It is used as compiled Python extension in the [FA Forever client](https://github.com/FAForever/client) to prevent [smurfing](http://www.urbandictionary.com/define.php?term=smurfing).
 
-[![Appveyor](https://ci.appveyor.com/api/projects/status/gmcck6x9k4bbm0fm?svg=true)](https://ci.appveyor.com/project/muellni/uid)
-[![Travis](https://travis-ci.org/FAForever/uid.svg?branch=master)](https://travis-ci.org/muellni/uid)
+[![Appveyor](https://ci.appveyor.com/api/projects/status/m0m3tr7roo4d64cp?svg=true)](https://ci.appveyor.com/project/Sheeo/uid)
+[![Travis](https://travis-ci.org/FAForever/uid.svg?branch=master)](https://travis-ci.org/FAForever/uid)
 
 ## Build instructions
 You need:
