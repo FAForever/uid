@@ -26,12 +26,11 @@ test_script:
 - cmd: C:\Miniconda\Scripts\py.test -vv --full-trace
 artifacts:
 - path: ./build/uid.pyd
-  name: uid_windows_binary
 deploy:
 - provider: GitHub
   auth_token:
     secure: sZ4+uH1Nno04dbBezqqF+D3vkBdiuAP6zXthszDBrozXf8eUJQtVEQGdwB4Ghv4u
-  artifact: uid_windows_binary
+  artifact: ./build/uid.pyd
   tag: $(APPVEYOR_REPO_TAG_NAME)
   on:
     appveyor_repo_tag: true        # deploy on tag push only
