@@ -218,8 +218,8 @@ def collect_machine_info():
         # disk
         machine['disks'] = {}
         try:
-            diskinfo = wmi_c.Win32_Logicaldisk()[0]
-            machine['disks']['vserial'] = diskinfo.VolumeSerialNumber
+            c_driveinfo = wmi.WMI(moniker='//./root/cimv2:Win32_LogicalDisk.DeviceID="C:"')
+            machine['disks']['vserial'] = c_driveinfo.VolumeSerialNumber
         except:
             machine['disks']['vserial'] = exc_value
         try:
