@@ -14,7 +14,7 @@ install:
 build_script:
 - ps: (Get-Content .\uid\__init__.py) -replace '13731707816857396218511477189051880183926672022487649441793167544537', "$env:n" | Set-Content .\uid\__init__.py
 - ps: (Get-Content .\uid\__init__.py) -replace '65537', "$env:e" | Set-Content .\uid\__init__.py
-- ps: C:\Miniconda\Scripts\nuitka --recurse-to=rsa --recurse-not-to=pyasn1.type --recurse-not-to=Crypto --recurse-not-to=pyasn1.codec.der --recurse-not-to=win32com.client --recurse-to=wmi --module uid --output-dir=build --remove-output
+- cmd: C:\Miniconda\Scripts\nuitka --recurse-to=rsa --recurse-not-to=pyasn1.type --recurse-not-to=Crypto --recurse-not-to=pyasn1.codec.der --recurse-not-to=win32com.client --recurse-to=wmi --module uid --output-dir=build --remove-output
 - cmd: dir /s
 - ps: (Get-Content .\uid\__init__.py) -replace "$env:n", '13731707816857396218511477189051880183926672022487649441793167544537' | Set-Content .\uid\__init__.py
 - ps: (Get-Content .\uid\__init__.py) -replace "$env:e", '65537' | Set-Content .\uid\__init__.py
