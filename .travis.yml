@@ -3,7 +3,7 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
-      env: UID_FILENAME=uid_py276.so
+      env: UID_FILENAME=uid_py2710.so
     - os: linux
       sudo: required
       env: UID_FILENAME=uid_py273.so
@@ -14,10 +14,11 @@ env:
   - secure: V23UleSDM9vYuhFY68JY+VPBNF1DxFh0y7LB9U0RNql05dJv02QjU+W/eteAJ+VkhqrIq1XDaIMYp3/eon+tT+iT9xtIdaj0DreaWu0paCfaVITOHBYARDmTwwo7i/NvUdZbAyjKEc7dpxBkZwHZCpu9dIUOqXGg/cKmDQdKeNsNITJOsudueeeMp1P5eWj1om/PH/8PhwteSvJwTPXOKIhAj2IVL4EkiFkMEA9cIF4u/y6IkugnJsDCBqnr5SsioM6XXEbe6i0l9/ngSs2y20peFNnSITrzw/2xKlolLHfmFO/0ubmHAxBXC5W9cP4Fk2FGdY10rFh6MoCjgyjUYm0xfP+s6Nhx4yjkG9kNm1CXkl4TZyNdQu2qoVsrLJhZ4Y/yPiusmuWZWdlxu2l10UPrt35VtZtD5VosNZ/otMHErv/TLwEzqw3rpPW48Cyx/HeVg4PMTKad0amIsGpykW3ghLh7N0cvBqh3b0Yk7k2UsLf/6I7f1OcleUejDNpkoC/fjMSB/jQ6B3LfFMrzMur5kzzoqla6TLp/OWs9eoGXeu9Iw58XmvvMkcoNCQgntT2tm9t7XaOpURHDpKGwl5G59DbpWXFTq9qF5gjhT/9EuH18OtEzhkBA+jivR2P7lj9NeQMDqkww4wmgf740+8dcq82thqgY+Cckf/X2XZM=
 install:
 - sudo apt-get update
-- sudo apt-get install -y python-qt4 python-crypto
+- sudo apt-get install -y python-qt4
 - pip install --user nuitka
 - pip install --user rsa
 - pip install --user pytest
+- pip install --user pycrypto
 before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
