@@ -4,12 +4,12 @@ matrix:
       dist: trusty
       sudo: required
       env: UID_FILENAME=uid_py276.so
+      python: "2.7_with_system_site_packages"
     - os: linux
       sudo: required
       env: UID_FILENAME=uid_py273.so
+      python: "2.7_with_system_site_packages"
 
-python:
-  - 2.7_with_system_site_packages
 env:
   global:
   - secure: gZJEU+r0BJYH3GxoQAUWUUAse6VlOT28pTnT07ft2vrutTr0Q9383OpNlxkCZ34BBXr2hDlwAYkO1oy4lLQoyjAe59KPSuTmbGZloI/4DojEuwxf5rDHeVK8YkA/cmP6UW2BHpBOCYor4l0lz9XihFPuiriiRiy0BkRK3mwMTBO18SmjbxXw49si1/6oVJupuT4UYUHQbu6MNAYyIPcPQKMPEYOdV5AkIb9cKM+QMpExC+Sby/f/4m68J9MygcM+YMbb+PuWvuUot4FzTrWjswLp1slbI8YdN7BoC4hyPlW9Tuquq40WSTeTf2S/BS1qkfvFHpddF5OEcGvfkameg7mo1J1ZZWv8wlrM513FWM+t4QKNkXadqFetbznm94bNrnVvU6R7Z7Utf4+zl4TW9z5lb8KyO+nu/qFlWf2qORyyVTmxXeLXaK9ZDtr5QFgPfk4tKcVlnD2ECtYcm35TtEJF5dkOpETYG30W+6fd1glw3oQKj5gWJrPCC50mss3C/zsWN2tHTbeGSgix3hNrDsJuMcELkDdJIkAAhn1WnVyAfdt5hSX9A0S4W131G5t6I00lZs1e+ZAzOr5+LvotLtg1W48xIQtrbv2GEBkZEyV/bsOoLSyTLFelN6ehiq/eALQEhHodxx8P3tDgi5jG4SKPcqdi6fSwnGfPvpbZbMI=
