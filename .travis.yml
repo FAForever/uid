@@ -1,11 +1,10 @@
 matrix:
   include:
     - os: linux
-      python: "2.7.6"
+      dist: trusty
       sudo: required
       env: UID_FILENAME=uid_py276.so
     - os: linux
-      python: "2.7.3"
       sudo: required
       env: UID_FILENAME=uid_py273.so
 
