@@ -3,22 +3,23 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
-      env: UID_FILENAME=uid_py2710.so
+      env: UID_FILENAME=uid_py276.so
     - os: linux
       sudo: required
       env: UID_FILENAME=uid_py273.so
 
+python:
+  - 2.7_with_system_site_packages
 env:
   global:
   - secure: gZJEU+r0BJYH3GxoQAUWUUAse6VlOT28pTnT07ft2vrutTr0Q9383OpNlxkCZ34BBXr2hDlwAYkO1oy4lLQoyjAe59KPSuTmbGZloI/4DojEuwxf5rDHeVK8YkA/cmP6UW2BHpBOCYor4l0lz9XihFPuiriiRiy0BkRK3mwMTBO18SmjbxXw49si1/6oVJupuT4UYUHQbu6MNAYyIPcPQKMPEYOdV5AkIb9cKM+QMpExC+Sby/f/4m68J9MygcM+YMbb+PuWvuUot4FzTrWjswLp1slbI8YdN7BoC4hyPlW9Tuquq40WSTeTf2S/BS1qkfvFHpddF5OEcGvfkameg7mo1J1ZZWv8wlrM513FWM+t4QKNkXadqFetbznm94bNrnVvU6R7Z7Utf4+zl4TW9z5lb8KyO+nu/qFlWf2qORyyVTmxXeLXaK9ZDtr5QFgPfk4tKcVlnD2ECtYcm35TtEJF5dkOpETYG30W+6fd1glw3oQKj5gWJrPCC50mss3C/zsWN2tHTbeGSgix3hNrDsJuMcELkDdJIkAAhn1WnVyAfdt5hSX9A0S4W131G5t6I00lZs1e+ZAzOr5+LvotLtg1W48xIQtrbv2GEBkZEyV/bsOoLSyTLFelN6ehiq/eALQEhHodxx8P3tDgi5jG4SKPcqdi6fSwnGfPvpbZbMI=
   - secure: V23UleSDM9vYuhFY68JY+VPBNF1DxFh0y7LB9U0RNql05dJv02QjU+W/eteAJ+VkhqrIq1XDaIMYp3/eon+tT+iT9xtIdaj0DreaWu0paCfaVITOHBYARDmTwwo7i/NvUdZbAyjKEc7dpxBkZwHZCpu9dIUOqXGg/cKmDQdKeNsNITJOsudueeeMp1P5eWj1om/PH/8PhwteSvJwTPXOKIhAj2IVL4EkiFkMEA9cIF4u/y6IkugnJsDCBqnr5SsioM6XXEbe6i0l9/ngSs2y20peFNnSITrzw/2xKlolLHfmFO/0ubmHAxBXC5W9cP4Fk2FGdY10rFh6MoCjgyjUYm0xfP+s6Nhx4yjkG9kNm1CXkl4TZyNdQu2qoVsrLJhZ4Y/yPiusmuWZWdlxu2l10UPrt35VtZtD5VosNZ/otMHErv/TLwEzqw3rpPW48Cyx/HeVg4PMTKad0amIsGpykW3ghLh7N0cvBqh3b0Yk7k2UsLf/6I7f1OcleUejDNpkoC/fjMSB/jQ6B3LfFMrzMur5kzzoqla6TLp/OWs9eoGXeu9Iw58XmvvMkcoNCQgntT2tm9t7XaOpURHDpKGwl5G59DbpWXFTq9qF5gjhT/9EuH18OtEzhkBA+jivR2P7lj9NeQMDqkww4wmgf740+8dcq82thqgY+Cckf/X2XZM=
 install:
 - sudo apt-get update
-- sudo apt-get install -y python-qt4
+- sudo apt-get install -y python-qt4 python-crypto
 - pip install --user nuitka
 - pip install --user rsa
 - pip install --user pytest
-- pip install --user pycrypto
 before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
