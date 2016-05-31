@@ -16,9 +16,9 @@ env:
 install:
 - sudo apt-get update
 - sudo apt-get install -y python-qt4 python-crypto
-- pip install nuitka
-- pip install rsa
-- pip install pytest
+- pip install --user nuitka
+- pip install --user rsa
+- pip install --user pytest
 before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
