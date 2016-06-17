@@ -6,6 +6,8 @@ matrix:
       env:
       - UID_FILENAME=uid
       - UID_PLATFORM='linux'
+      - CXX=g++-5
+      - CC=gcc-5
       compiler: gcc
       addons:
        apt:
