@@ -12,14 +12,15 @@ matrix:
       - echo "deb http://pkg.mxe.cc/repos/apt/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mxeapt.list
       - sudo apt-key adv --keyserver x-hkp://keys.gnupg.net --recv-keys D43A795B73B16ABE9643FE1AFD8FFF16DB45C6AB
       - sudo apt-get update
-      - sudo apt-get --yes install python3
-      - sudo apt-get --yes install mxe-$MXE_TARGET-jsoncpp
-      - sudo apt-get --yes install mxe-$MXE_TARGET-cryptopp
-      - sudo apt-get --yes install mxe-$MXE_TARGET-icu4c
+      - sudo apt-get --yes install
+        python3
+        mxe-$MXE_TARGET-jsoncpp
+        mxe-$MXE_TARGET-cryptopp
+        mxe-$MXE_TARGET-icu4c
       script:
       - mkdir build && cd build
       - $MXE_DIR/usr/bin/$MXE_TARGET-cmake
-        -DCMAKE_BUILD_TYPE=MinSizeRel
+        -DCMAKE_BUILD_TYPE=Release
         -DCRYPTOPP_LIBRARIES=/usr/lib/mxe/usr/$MXE_TARGET/lib/libcryptopp.a
         -DCRYPTOPP_INCLUDE_DIRS=/usr/lib/mxe/usr/$MXE_TARGET/include
         -DUID_PUBKEY_BYTES=`../int_to_bytes.py $n`
