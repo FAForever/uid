@@ -1,0 +1,25 @@
+LIBRARY "libeay32.dll"
+
+EXPORTS
+set_leak_ptr @1
+MY_BIO_ctrl @52
+MY_BIO_f_base64 @57
+MY_BIO_free_all @67
+MY_BIO_new @78
+MY_BIO_push @87
+MY_BIO_s_mem @95
+MY_BIO_write @109
+MY_EVP_CIPHER_CTX_cleanup @256
+MY_EVP_DecryptUpdate @266
+MY_EVP_EncryptUpdate @276
+MY_RAND_bytes  @464
+MY_RSA_free @484
+MY_RSA_new @486
+MY_RSA_public_encrypt @493
+MY_d2i_RSAPublicKey @753
+MY_EVP_CIPHER_CTX_init @961
+MY_EVP_DecryptFinal_ex @2656
+MY_EVP_EncryptFinal_ex @2660
+MY_EVP_EncryptInit_ex @2894
+MY_EVP_aes_128_cbc @2927
+MY_EVP_DecryptInit_ex @3067

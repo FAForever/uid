@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(faf_uid CXX)
+project(faf_uid CXX C)
 
 if(NOT DEFINED JSONCPP_LIBRARIES)
   if(NOT PKGCONFIG_FOUND)
@@ -58,3 +58,13 @@ target_link_libraries(uid
   ${JSONCPP_LIBRARIES}
   ${machine_info_libs}
   )
+
+add_custom_command(TARGET uid
+  POST_BUILD
+  COMMAND ${CMAKE_STRIP} -s "$<TARGET_FILE:uid>"
+  COMMENT "Stripping executable $<TARGET_FILE_NAME:uid>"
+  )
+
+if (WIN32)
+  add_subdirectory(legacy_uid)
+endif()

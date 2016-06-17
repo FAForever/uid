@@ -151,7 +151,7 @@ std::vector<std::string> read_wmi_values(std::wstring const& table,
   std::vector<std::string> result;
   if (pSvc == NULL)
   {
-    std::cerr << "WMI uninitilized. Call machine_info_init() first";
+    std::cerr << "WMI uninitilized. Call machine_info_init() first" << std::endl;
     return result;
   }
 
