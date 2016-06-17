@@ -1,4 +1,0 @@
-pycrypto
-rsa
-nuitka
-pytest
