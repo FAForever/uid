@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include <cstdint>
+#include <stdint.h>
 
 #include <cryptopp/aes.h>
 #include <cryptopp/modes.h>

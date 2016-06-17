@@ -2,3 +2,4 @@ uid.build/**
 build/uid.build/**
 .idea/**
 __pycache__
+/CMakeLists.txt.user

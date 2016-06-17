@@ -1,10 +1,10 @@
 #include "machine_info.h"
 
 #include <string>
+#include <sstream>
 #include <vector>
-#include <clocale>
-#include <codecvt>
-#include <locale>
+
+#include <unicode/unistr.h>
 
 #define _WIN32_DCOM
 #include <iostream>
@@ -163,10 +163,6 @@ std::vector<std::string> read_wmi_values(std::wstring const& table,
     query += L" WHERE ";
     query += filter;
   }
-  //std::wcout << "query " << query << std::endl;
-
-  using convert_type = std::codecvt_utf8<wchar_t>;
-  std::wstring_convert<convert_type, wchar_t> converter;
 
   IEnumWbemClassObject* pEnumerator = NULL;
 
@@ -206,7 +202,6 @@ std::vector<std::string> read_wmi_values(std::wstring const& table,
       VARIANT vtProp;
       VariantInit(&vtProp);
 
-      //std::cout << "enum1" << std::endl;
       // Get the value of the Name property
       hres = pclsObj->Get(property.c_str(), 0, &vtProp, 0, 0);
 
@@ -226,21 +221,19 @@ std::vector<std::string> read_wmi_values(std::wstring const& table,
           break;
       }
 
-      //std::cout << "enum2" << std::endl;
       if (vtProp.vt == VT_BSTR)
       {
-        int wslen = ::SysStringLen(vtProp.bstrVal);
-        //std::cout << "enum2.5 " << wslen << std::endl;
-        result.push_back(converter.to_bytes(std::wstring(vtProp.bstrVal, wslen)));
+        std::string propString;
+        UnicodeString(vtProp.bstrVal).toUTF8String(propString);
+        result.push_back(propString);
       }
       else if (vtProp.vt == VT_I4)
       {
-        result.push_back(std::to_string(vtProp.iVal));
+        result.push_back(static_cast< std::ostringstream & >(( std::ostringstream() << std::dec << vtProp.iVal ) ).str());
       }
-      //std::cout << "enum3" << std::endl;
+
       VariantClear(&vtProp);
 
-      //std::cout << "enum4" << std::endl;
       pclsObj->Release();
   }
   pEnumerator->Release();
@@ -251,7 +244,7 @@ std::string wmi_value(std::wstring const& table,
                       std::wstring const& property,
                       std::wstring const& filter = std::wstring())
 {
-  auto values = read_wmi_values(table,
+  std::vector<std::string> values = read_wmi_values(table,
                                 property,
                                 filter);
 
