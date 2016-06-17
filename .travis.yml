@@ -13,13 +13,15 @@ matrix:
       - sudo apt-key adv --keyserver x-hkp://keys.gnupg.net --recv-keys D43A795B73B16ABE9643FE1AFD8FFF16DB45C6AB
       - sudo apt-get update
       - sudo apt-get --yes install python3
-      - sudo apt-get --yes install mxe-i686-w64-mingw32.static-jsoncpp
-      - sudo apt-get --yes install mxe-i686-w64-mingw32.static-cryptopp
-      - sudo apt-get --yes install mxe-i686-w64-mingw32.static-icu4c
+      - sudo apt-get --yes install mxe-$MXE_TARGET-jsoncpp
+      - sudo apt-get --yes install mxe-$MXE_TARGET-cryptopp
+      - sudo apt-get --yes install mxe-$MXE_TARGET-icu4c
       script:
       - mkdir build && cd build
-      - $MXE_DIR/usr/bin/$MXE_TARGET-cmake >
+      - $MXE_DIR/usr/bin/$MXE_TARGET-cmake
         -DCMAKE_BUILD_TYPE=MinSizeRel
+        -DCRYPTOPP_LIBRARIES=/usr/lib/mxe/usr/$MXE_TARGET/lib/libcryptopp.a
+        -DCRYPTOPP_INCLUDE_DIRS=/usr/lib/mxe/usr/$MXE_TARGET/include
         -DUID_PUBKEY_BYTES=`../int_to_bytes.py $n`
         ..
       - make -j8
