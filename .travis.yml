@@ -8,13 +8,14 @@ matrix:
       - UID_PLATFORM='linux'
       - CXX=g++-5
       - CC=gcc-5
-      compiler: gcc
       addons:
        apt:
          sources:
          - ubuntu-toolchain-r-test
+         - george-edison55-precise-backports
          packages:
          - gcc-5
+         - cmake
     - os: linux
       sudo: false
       env:
@@ -25,7 +26,9 @@ matrix:
        apt:
          sources:
          - ubuntu-toolchain-r-test
+         - george-edison55-precise-backports
          packages:
+         - cmake
          - gcc-4.8
          - g++-4.8
          - autopoint
