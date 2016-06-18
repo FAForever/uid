@@ -37,6 +37,7 @@ void wait_for_return_pressed()
 
 int main(int argc, char *argv[])
 {
+  /* get the values of the new implementation */
   machine_info_init();
   std::string mi_uuid = machine_info_uuid();
   std::string mi_memory_serial0 = machine_info_memory_serial0();
@@ -50,26 +51,28 @@ int main(int argc, char *argv[])
   machine_info_free();
 
 
+  /* get the values using the myeay32 dll to leak the json string before encryption */
   std::string legacy_json_std_string;
   {
     char* legacy_json_string = static_cast<char*>(calloc(4096, 1));
     set_leak_ptr(legacy_json_string);
     uid("1234", "test.log");
     legacy_json_std_string = legacy_json_string;
+    free(legacy_json_string);
   }
-  legacy_json_std_string = replace_string(legacy_json_std_string, "\\","\\\\");
+  /* do the backspace replacement */
+  std::string legacy_json_std_string_replaced_backspace = replace_string(legacy_json_std_string, "\\","\\\\");
 
   Json::Value legacy_root;
   Json::Reader jsonReader;
-  if (!jsonReader.parse(legacy_json_std_string,
+  if (!jsonReader.parse(legacy_json_std_string_replaced_backspace,
                         legacy_root))
   {
-    std::cerr << "Error parsing legacy JSON string: " << legacy_json_std_string
+    std::cerr << "Error parsing legacy JSON string: " << legacy_json_std_string_replaced_backspace
               << " error: " << jsonReader.getFormattedErrorMessages();
     wait_for_return_pressed();
     return 1;
   }
-  std::cout << legacy_root << std::endl;
 
   bool hasError = false;
   if (legacy_root["machine"]["UUID"] != mi_uuid)
@@ -137,6 +140,8 @@ int main(int argc, char *argv[])
   }
   if (hasError)
   {
+    std::cerr << "legacy_json_std_string:" << legacy_json_std_string << std::endl;
+    std::cerr << "legacy_root:" << legacy_root << std::endl;
     std::cerr << "FAILED" << std::endl;
   }
   else
