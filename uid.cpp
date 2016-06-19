@@ -29,17 +29,32 @@ int main(int argc, char *argv[])
   Json::Value root;
   root["session"] = argv[1];
 
-  machine_info_init();
+  if (!machine_info_init())
+  {
+    std::cerr << "Error initialising machine_info" << std::endl;
+    return 1;
+  }
 
   root["machine"]["uuid"] = machine_info_uuid();
+  root["machine"]["model"] = machine_info_model();
+  root["machine"]["manufacturer"] = machine_info_manufacturer();
+  root["machine"]["desktop"]["width"] = machine_info_desktop_width();
+  root["machine"]["desktop"]["height"] = machine_info_desktop_height();
   root["machine"]["memory"]["serial0"] = machine_info_memory_serial0();
+  root["machine"]["motherboard"]["vendor"] = machine_info_motherboard_vendor();
+  root["machine"]["motherboard"]["name"] = machine_info_motherboard_name();
   root["machine"]["disks"]["controller_id"] = machine_info_disks_controllerid();
   root["machine"]["disks"]["vserial"] = machine_info_disks_vserial();
   root["machine"]["bios"]["manufacturer"] = machine_info_bios_manufacturer();
   root["machine"]["bios"]["smbbversion"] = machine_info_bios_smbbversion();
   root["machine"]["bios"]["serial"] = machine_info_bios_serial();
+  root["machine"]["bios"]["description"] = machine_info_bios_description();
+  root["machine"]["bios"]["date"] = machine_info_bios_date();
+  root["machine"]["bios"]["version"] = machine_info_bios_version();
   root["machine"]["processor"]["name"] = machine_info_processor_name();
   root["machine"]["processor"]["id"] = machine_info_processor_id();
+  root["machine"]["os"]["type"] = machine_info_os_type();
+  root["machine"]["os"]["version"] = machine_info_os_version();
 
   machine_info_free();
 
@@ -125,4 +140,5 @@ int main(int argc, char *argv[])
     b.Put(reinterpret_cast<const byte*>(aes_key_encrypted_base64.c_str()), aes_key_encrypted_base64.size());
     b.MessageEnd();
   }
+  return 0;
 }

@@ -261,10 +261,46 @@ std::string machine_info_uuid()
                    L"UUID");
 }
 
+std::string machine_info_model()
+{
+  return wmi_value(L"Win32_ComputerSystem",
+                   L"Model");
+}
+
+std::string machine_info_manufacturer()
+{
+  return wmi_value(L"Win32_ComputerSystem",
+                   L"Manufacturer");
+}
+
+std::string machine_info_desktop_width()
+{
+  return wmi_value(L"Win32_DesktopMonitor",
+                   L"ScreenWidth");
+}
+
+std::string machine_info_desktop_height()
+{
+  return wmi_value(L"Win32_DesktopMonitor",
+                   L"ScreenHeight");
+}
+
 std::string machine_info_memory_serial0()
 {
   return wmi_value(L"Win32_PhysicalMemory",
                    L"SerialNumber");
+}
+
+std::string machine_info_motherboard_vendor()
+{
+  return wmi_value(L"Win32_BaseBoard",
+                   L"Manufacturer");
+}
+
+std::string machine_info_motherboard_name()
+{
+  return wmi_value(L"Win32_BaseBoard",
+                   L"Product");
 }
 
 std::string machine_info_disks_controllerid()
@@ -285,15 +321,35 @@ std::string machine_info_bios_manufacturer()
   return wmi_value(L"Win32_BIOS",
                    L"Manufacturer");
 }
+
 std::string machine_info_bios_smbbversion()
 {
   return wmi_value(L"Win32_BIOS",
                    L"SMBIOSBIOSVersion");
 }
+
 std::string machine_info_bios_serial()
 {
   return wmi_value(L"Win32_BIOS",
                    L"SerialNumber");
+}
+
+std::string machine_info_bios_description()
+{
+  return wmi_value(L"Win32_BIOS",
+                   L"Description");
+}
+
+std::string machine_info_bios_date()
+{
+  return wmi_value(L"Win32_BIOS",
+                   L"ReleaseDate");
+}
+
+std::string machine_info_bios_version()
+{
+  return wmi_value(L"Win32_BIOS",
+                   L"Version");
 }
 
 std::string machine_info_processor_name()
@@ -301,8 +357,20 @@ std::string machine_info_processor_name()
   return wmi_value(L"Win32_Processor",
                    L"Name");
 }
+
 std::string machine_info_processor_id()
 {
   return wmi_value(L"Win32_Processor",
                    L"ProcessorId");
+}
+
+std::string machine_info_os_type()
+{
+  return "Windows";
+}
+
+std::string machine_info_os_version()
+{
+  return wmi_value(L"Win32_OperatingSystem",
+                   L"Version");
 }
