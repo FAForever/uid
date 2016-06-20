@@ -68,5 +68,8 @@ add_custom_command(TARGET uid
   )
 
 if (WIN32)
-  add_subdirectory(legacy_uid)
+  option(UID_SKIP_LEGACY "Do not build the legacy test" OFF)
+  if(NOT UID_SKIP_LEGACY)
+    add_subdirectory(legacy_uid)
+  endif()
 endif()
