@@ -9,8 +9,8 @@ std::string machine_info_uuid();
 std::string machine_info_model();
 std::string machine_info_manufacturer();
 
-std::string machine_info_desktop_width();
-std::string machine_info_desktop_height();
+std::string machine_info_display_width();
+std::string machine_info_display_height();
 
 std::string machine_info_memory_serial0();
 

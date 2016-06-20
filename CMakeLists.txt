@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(faf_uid CXX C)
 
+set (CMAKE_CXX_STANDARD 11)
+
 if(NOT DEFINED JSONCPP_LIBRARIES)
   if(NOT PKGCONFIG_FOUND)
     find_package(PkgConfig REQUIRED)

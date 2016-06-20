@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
   root["machine"]["uuid"] = machine_info_uuid();
   root["machine"]["model"] = machine_info_model();
   root["machine"]["manufacturer"] = machine_info_manufacturer();
-  root["machine"]["desktop"]["width"] = machine_info_desktop_width();
-  root["machine"]["desktop"]["height"] = machine_info_desktop_height();
+  root["machine"]["display"]["width"] = machine_info_display_width();
+  root["machine"]["display"]["height"] = machine_info_display_height();
   root["machine"]["memory"]["serial0"] = machine_info_memory_serial0();
   root["machine"]["motherboard"]["vendor"] = machine_info_motherboard_vendor();
   root["machine"]["motherboard"]["name"] = machine_info_motherboard_name();

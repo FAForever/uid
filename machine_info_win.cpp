@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <regex>
 
 #include <unicode/unistr.h>
 
@@ -11,6 +12,8 @@
 #include <windows.h>
 #include <wbemidl.h>
 #include <comdef.h>
+
+std::string exc_value("invalid");
 
 IWbemServices *pSvc(NULL);
 IWbemLocator *pLoc(NULL);
@@ -252,7 +255,19 @@ std::string wmi_value(std::wstring const& table,
   {
     return values.front();
   }
-  return "invalid";
+  return exc_value;
+}
+
+std::string match_regex(std::string const& input,
+                        char const* r_string)
+{
+  std::regex r(r_string);
+  std::smatch sm;
+  if (std::regex_search(input, sm, r))
+  {
+    return sm[1];
+  }
+  return exc_value;
 }
 
 std::string machine_info_uuid()
@@ -273,16 +288,18 @@ std::string machine_info_manufacturer()
                    L"Manufacturer");
 }
 
-std::string machine_info_desktop_width()
+std::string machine_info_display_width()
 {
-  return wmi_value(L"Win32_DesktopMonitor",
-                   L"ScreenWidth");
+  std::string v_mode_desc = wmi_value(L"Win32_VideoController",
+                                      L"VideoModeDescription");
+  return match_regex(v_mode_desc, "(\\d+) x \\d+ x \\d+ colors");
 }
 
-std::string machine_info_desktop_height()
+std::string machine_info_display_height()
 {
-  return wmi_value(L"Win32_DesktopMonitor",
-                   L"ScreenHeight");
+  std::string v_mode_desc = wmi_value(L"Win32_VideoController",
+                                      L"VideoModeDescription");
+  return match_regex(v_mode_desc, "\\d+ x (\\d+) x \\d+ colors");
 }
 
 std::string machine_info_memory_serial0()

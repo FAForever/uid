@@ -7,12 +7,23 @@
 #include <string>
 #include <fstream>
 #include <regex>
-
-#include <boost/algorithm/string.hpp>
+#include <algorithm>
+#include <functional>
+#include <cctype>
+#include <locale>
 
 #include <json/json.h>
 
 std::string exc_value("invalid");
+
+std::string& rtrim(std::string &s)
+{
+  s.erase(std::find_if(s.rbegin(),
+                       s.rend(),
+                       std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
+          s.end());
+  return s;
+}
 
 std::string exec(const char* cmd)
 {
@@ -28,7 +39,7 @@ std::string exec(const char* cmd)
       if (fgets(buffer, 128, pipe.get()) != NULL)
           result += buffer;
   }
-  boost::algorithm::trim_right(result);
+  rtrim(result);
   return result;
 }
 
@@ -41,7 +52,7 @@ std::string read_file(std::string const& filename)
   }
   std::string content((std::istreambuf_iterator<char>(ifs)),
                        std::istreambuf_iterator<char>());
-  boost::algorithm::trim_right(content);
+  rtrim(content);
   return content;
 }
 
@@ -82,13 +93,13 @@ std::string machine_info_manufacturer()
   return read_file("/sys/class/dmi/id/sys_vendor");
 }
 
-std::string machine_info_desktop_width()
+std::string machine_info_display_width()
 {
   std::string xrandr = exec("xrandr");
   return match_regex(xrandr, "current (\\d+) x \\d+");
 }
 
-std::string machine_info_desktop_height()
+std::string machine_info_display_height()
 {
   std::string xrandr = exec("xrandr");
   return match_regex(xrandr, "current \\d+ x (\\d+)");
