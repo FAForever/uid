@@ -27,6 +27,51 @@ matrix:
         ..
       - make -j8
       - cd ..
+    - os: linux
+      sudo: false
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - g++-5
+            - cmake
+            - cmake-data
+      env:
+      - COMPILER=g++-5
+      - UID_FILENAME=uid
+      - UID_PLATFORM='linux'
+      install:
+      - wget https://github.com/open-source-parsers/jsoncpp/archive/1.7.2.tar.gz -O jsoncpp.tar.gz
+      - tar xfz jsoncpp.tar.gz
+      - mkdir jsoncpp-build
+      - cd jsoncpp-build
+      - cmake
+        -DCMAKE_BUILD_TYPE=MinSizeRel
+        -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
+        -DBUILD_STATIC_LIBS=ON
+        -DBUILD_SHARED_LIBS=OFF
+        ../jsoncpp-1.7.2
+      - make -j8
+      - cd ..
+      - wget https://www.cryptopp.com/cryptopp563.zip
+      - mkdir cryptopp
+      - cd cryptopp
+      - unzip ../cryptopp563.zip
+      - make -j8 -f GNUmakefile CXXFLAGS='-DNDEBUG -O3 -mtune=native -pipe' libcryptopp.a
+      - cd ..
+      script:
+      - mkdir build && cd build
+      - cmake \
+        -DJSONCPP_LIBRARIES=$TRAVIS_BUILD_DIR/jsoncpp-build/src/lib_json/libjsoncpp.a
+        -DJSONCPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/jsoncpp-1.7.2/include
+        -DCRYPTOPP_LIBRARIES=$TRAVIS_BUILD_DIR/cryptopp/libcryptopp.a
+        -DCRYPTOPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR \
+        -DCMAKE_BUILD_TYPE=MinSizeRel
+        -DUID_PUBKEY_BYTES=`./int_to_bytes.py $n`
+        ..
 
 env:
   global:
