@@ -55,7 +55,7 @@ if(NOT DEFINED UID_PUBKEY_BYTES)
     )
 endif()
 
-add_definitions(-DUID_PUBKEY_BYTES="${UID_PUBKEY_BYTES}")
+add_definitions(-DUID_PUBKEY_BYTES=${UID_PUBKEY_BYTES})
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 
