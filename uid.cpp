@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
 
   //std::cout << root << std::endl;
   std::string json_string = std::string("2") + Json::FastWriter().write(root);
+  //std::cout << json_string << "<-END" << std::endl;
 
   try
   {
@@ -124,7 +125,11 @@ int main(int argc, char *argv[])
     }
 
     /* the number of padding bytes (AES can only encrypt a multiple of 16 bytes) */
-    unsigned char paddingSize = json_string.size() % 16;
+    unsigned char paddingSize = 16 - (json_string.size() % 16);
+    if (paddingSize == 16)
+    {
+      paddingSize = 0;
+    }
 
     {
       /* the final bytearray consists of the
