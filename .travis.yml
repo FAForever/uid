@@ -59,7 +59,7 @@ matrix:
         ../jsoncpp-1.7.2
       - make -j8
       - cd ..
-      - wget https://www.cryptopp.com/cryptopp563.zip
+      - wget https://sourceforge.net/projects/cryptopp/files/cryptopp/5.6.3/cryptopp563.zip/download -O cryptopp563.zip
       - mkdir cryptopp
       - cd cryptopp
       - unzip ../cryptopp563.zip
