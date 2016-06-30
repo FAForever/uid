@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     assert(iv_b64.size() == 24);
 
     /* create the RSA Public key from the UID_PUBKEY_BYTES #define */
-    uint8_t pubkey_bytes[] = {UID_PUBKEY_BYTES};
+    uint8_t pubkey_bytes[28] = {UID_PUBKEY_BYTES};
     CryptoPP::RSA::PublicKey publicKey;
     CryptoPP::Integer modulus;
     modulus.Decode(pubkey_bytes, 28);

@@ -41,6 +41,7 @@ matrix:
             - g++-6
             - cmake
             - cmake-data
+            - python3
       env:
       - UID_FILENAME=uid
       - UID_PLATFORM='linux'
