@@ -38,7 +38,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - george-edison55-precise-backports
           packages:
-            - g++-5
+            - g++-6
             - cmake
             - cmake-data
       env:
@@ -51,7 +51,7 @@ matrix:
       - cd jsoncpp-build
       - cmake
         -DCMAKE_BUILD_TYPE=MinSizeRel
-        -DCMAKE_CXX_COMPILER=g++-5
+        -DCMAKE_CXX_COMPILER=g++-6
         -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
         -DBUILD_STATIC_LIBS=ON
         -DBUILD_SHARED_LIBS=OFF
@@ -62,12 +62,12 @@ matrix:
       - mkdir cryptopp
       - cd cryptopp
       - unzip ../cryptopp563.zip
-      - make -j8 -f GNUmakefile CXX=g++-5 CXXFLAGS='-DNDEBUG -O3 -mtune=native -pipe' libcryptopp.a
+      - make -j8 -f GNUmakefile CXX=g++-6 CXXFLAGS='-DNDEBUG -O3' libcryptopp.a
       - cd ..
       script:
       - mkdir build && cd build
       - cmake
-        -DCMAKE_CXX_COMPILER=g++-5
+        -DCMAKE_CXX_COMPILER=g++-6
         -DJSONCPP_LIBRARIES=$TRAVIS_BUILD_DIR/jsoncpp-build/src/lib_json/libjsoncpp.a
         -DJSONCPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/jsoncpp-1.7.2/include
         -DCRYPTOPP_LIBRARIES=$TRAVIS_BUILD_DIR/cryptopp/libcryptopp.a
