@@ -64,12 +64,19 @@ add_executable(uid
   ${machine_info_src}
   )
 
+# Disable console window popping up when running the exe from Python
+# Note: this also disables the output running the exe from cmd
+if (WIN32)
+  set_target_properties(uid PROPERTIES LINK_FLAGS -mwindows)
+endif()
+
 target_link_libraries(uid
   ${CRYPTOPP_LIBRARIES}
   ${JSONCPP_LIBRARIES}
   ${machine_info_libs}
   )
 
+# Strip exe to reduce file size
 add_custom_command(TARGET uid
   POST_BUILD
   COMMAND ${CMAKE_STRIP} -s "$<TARGET_FILE:uid>"
