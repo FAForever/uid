@@ -34,7 +34,7 @@ cmake \
   -DCRYPTOPP_LIBRARIES=$THIS_SCRIPT_DIR/cryptopp/libcryptopp.a \
   -DCRYPTOPP_INCLUDE_DIRS=$THIS_SCRIPT_DIR \
   -DCMAKE_BUILD_TYPE=MinSizeRel \
-  -DUID_PUBKEY_BYTES=`./int_to_bytes.py $n` \
+  -DUID_PUBKEY_BYTES=`../int_to_bytes.py $n` \
   ..
 make -j8
 strip -s uid
