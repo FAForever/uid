@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
   }
   catch(std::exception& e)
   {
-    std::cerr << "caught crypto exception of type " << typeid(e).name() << "\n";
+    std::cerr << "caught crypto exception of type " << typeid(e).name() << std::endl;
     std::cerr << "what: " << e.what() << std::endl;
     return 1;
   }
