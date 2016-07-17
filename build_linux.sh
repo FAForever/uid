@@ -6,6 +6,7 @@ set -e
 
 THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+[ -d jsoncpp-build ] || {
 wget https://github.com/open-source-parsers/jsoncpp/archive/1.7.2.tar.gz -O jsoncpp.tar.gz
 tar xfz jsoncpp.tar.gz
 mkdir jsoncpp-build
@@ -18,16 +19,21 @@ cmake \
   ../jsoncpp-1.7.2
 make -j8
 cd ..
+}
 
+[ -d cryptopp ] || {
 wget https://www.cryptopp.com/cryptopp563.zip
 mkdir cryptopp
 cd cryptopp
 unzip ../cryptopp563.zip
 make -j8 -f GNUmakefile CXXFLAGS='-DNDEBUG -O3 -mtune=native -pipe' libcryptopp.a
 cd ..
+}
 
-mkdir build
+
+[ -d build ] || mkdir build
 cd build
+[ -f CMakeCache.txt ] || \
 cmake \
   -DJSONCPP_LIBRARIES=$THIS_SCRIPT_DIR/jsoncpp-build/src/lib_json/libjsoncpp.a \
   -DJSONCPP_INCLUDE_DIRS=$THIS_SCRIPT_DIR/jsoncpp-1.7.2/include \
