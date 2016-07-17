@@ -126,10 +126,6 @@ int main(int argc, char *argv[])
 
     /* the number of padding bytes (AES can only encrypt a multiple of 16 bytes) */
     unsigned char paddingSize = 16 - (json_string.size() % 16);
-    if (paddingSize == 16)
-    {
-      paddingSize = 0;
-    }
 
     {
       /* the final bytearray consists of the
@@ -149,7 +145,7 @@ int main(int argc, char *argv[])
   }
   catch(std::exception& e)
   {
-    std::cerr << "caught crypto exception of type " << typeid(e).name() << "\n";
+    std::cerr << "caught crypto exception of type " << typeid(e).name() << std::endl;
     std::cerr << "what: " << e.what() << std::endl;
     return 1;
   }
