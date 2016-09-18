@@ -46,7 +46,7 @@ matrix:
       - UID_FILENAME=uid
       - UID_PLATFORM='linux'
       install:
-      - wget https://github.com/open-source-parsers/jsoncpp/archive/1.7.2.tar.gz -O jsoncpp.tar.gz
+      - wget https://github.com/open-source-parsers/jsoncpp/archive/1.7.5.tar.gz -O jsoncpp.tar.gz
       - tar xfz jsoncpp.tar.gz
       - mkdir jsoncpp-build
       - cd jsoncpp-build
@@ -56,23 +56,24 @@ matrix:
         -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
         -DBUILD_STATIC_LIBS=ON
         -DBUILD_SHARED_LIBS=OFF
-        ../jsoncpp-1.7.2
+        ../jsoncpp-1.7.5
       - make -j8
       - cd ..
-      - wget https://sourceforge.net/projects/cryptopp/files/cryptopp/5.6.3/cryptopp563.zip/download -O cryptopp563.zip
-      - mkdir cryptopp
+      - wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_5_6_4.zip -O cryptopp.zip
+      - unzip ../cryptopp.zip
+      - mv cryptopp-CRYPTOPP_5_6_4 cryptopp
       - cd cryptopp
-      - unzip ../cryptopp563.zip
-      - make -j8 -f GNUmakefile CXX=g++-6 CXXFLAGS='-DNDEBUG -O3' libcryptopp.a
+      - make -j8 -f GNUmakefile CXX=g++-6 CXXFLAGS='-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562 -DNDEBUG -O3' libcryptopp.a
       - cd ..
       script:
       - mkdir build && cd build
       - cmake
         -DCMAKE_CXX_COMPILER=g++-6
         -DJSONCPP_LIBRARIES=$TRAVIS_BUILD_DIR/jsoncpp-build/src/lib_json/libjsoncpp.a
-        -DJSONCPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/jsoncpp-1.7.2/include
+        -DJSONCPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/jsoncpp-1.7.5/include
         -DCRYPTOPP_LIBRARIES=$TRAVIS_BUILD_DIR/cryptopp/libcryptopp.a
         -DCRYPTOPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR
+        -DCMAKE_CXX_FLAGS="-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562"
         -DCMAKE_BUILD_TYPE=MinSizeRel
         -DUID_PUBKEY_BYTES=`../int_to_bytes.py $n`
         ..
