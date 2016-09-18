@@ -60,7 +60,7 @@ matrix:
       - make -j8
       - cd ..
       - wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_5_6_4.zip -O cryptopp.zip
-      - unzip ../cryptopp.zip
+      - unzip ./cryptopp.zip
       - mv cryptopp-CRYPTOPP_5_6_4 cryptopp
       - cd cryptopp
       - make -j8 -f GNUmakefile CXX=g++-6 CXXFLAGS='-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562 -DNDEBUG -O3' libcryptopp.a
