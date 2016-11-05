@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(faf_uid CXX C)
+project(faf-uid CXX C)
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" UID_COMPILER_SUPPORTS_CXX11)
@@ -59,7 +59,7 @@ add_definitions(-DUID_PUBKEY_BYTES=${UID_PUBKEY_BYTES})
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 
-add_executable(uid
+add_executable(faf-uid
   uid.cpp
   ${machine_info_src}
   )
@@ -67,20 +67,20 @@ add_executable(uid
 # Disable console window popping up when running the exe from Python
 # Note: this also disables the output running the exe from cmd
 if (WIN32)
-  set_target_properties(uid PROPERTIES LINK_FLAGS -mwindows)
+  set_target_properties(faf-uid PROPERTIES LINK_FLAGS -mwindows)
 endif()
 
-target_link_libraries(uid
+target_link_libraries(faf-uid
   ${CRYPTOPP_LIBRARIES}
   ${JSONCPP_LIBRARIES}
   ${machine_info_libs}
   )
 
 # Strip exe to reduce file size
-add_custom_command(TARGET uid
+add_custom_command(TARGET faf-uid
   POST_BUILD
-  COMMAND ${CMAKE_STRIP} -s "$<TARGET_FILE:uid>"
-  COMMENT "Stripping executable $<TARGET_FILE_NAME:uid>"
+  COMMAND ${CMAKE_STRIP} -s "$<TARGET_FILE:faf-uid>"
+  COMMENT "Stripping executable $<TARGET_FILE_NAME:faf-uid>"
   )
 
 if (WIN32)

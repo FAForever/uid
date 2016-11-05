@@ -5,7 +5,7 @@ matrix:
       sudo: required
       compiler: gcc
       env:
-      - UID_FILENAME=uid.exe
+      - UID_FILENAME=faf-uid.exe
       - UID_PLATFORM='win32'
       - MXE_DIR=/usr/lib/mxe
       - MXE_TARGET=i686-w64-mingw32.static
@@ -43,10 +43,12 @@ matrix:
             - cmake-data
             - python3
       env:
-      - UID_FILENAME=uid
+      - UID_FILENAME=faf-uid
       - UID_PLATFORM='linux'
+      - JSONCPP_VERSION=1.7.7
+      - CRYPTOPP_VERSION=5_6_5
       install:
-      - wget https://github.com/open-source-parsers/jsoncpp/archive/1.7.5.tar.gz -O jsoncpp.tar.gz
+      - wget https://github.com/open-source-parsers/jsoncpp/archive/$JSONCPP_VERSION.tar.gz -O jsoncpp.tar.gz
       - tar xfz jsoncpp.tar.gz
       - mkdir jsoncpp-build
       - cd jsoncpp-build
@@ -56,12 +58,12 @@ matrix:
         -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
         -DBUILD_STATIC_LIBS=ON
         -DBUILD_SHARED_LIBS=OFF
-        ../jsoncpp-1.7.5
+        ../jsoncpp-$JSONCPP_VERSION
       - make -j8
       - cd ..
-      - wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_5_6_4.zip -O cryptopp.zip
+      - wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_$CRYPTOPP_VERSION.zip -O cryptopp.zip
       - unzip ./cryptopp.zip
-      - mv cryptopp-CRYPTOPP_5_6_4 cryptopp
+      - mv cryptopp-CRYPTOPP_$CRYPTOPP_VERSION cryptopp
       - cd cryptopp
       - make -j8 -f GNUmakefile CXX=g++-6 CXXFLAGS='-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562 -DNDEBUG -O3' libcryptopp.a
       - cd ..
@@ -70,7 +72,7 @@ matrix:
       - cmake
         -DCMAKE_CXX_COMPILER=g++-6
         -DJSONCPP_LIBRARIES=$TRAVIS_BUILD_DIR/jsoncpp-build/src/lib_json/libjsoncpp.a
-        -DJSONCPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/jsoncpp-1.7.5/include
+        -DJSONCPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/jsoncpp-$JSONCPP_VERSION/include
         -DCRYPTOPP_LIBRARIES=$TRAVIS_BUILD_DIR/cryptopp/libcryptopp.a
         -DCRYPTOPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR
         -DCMAKE_CXX_FLAGS="-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562"
