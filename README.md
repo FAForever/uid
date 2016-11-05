@@ -16,8 +16,8 @@ You need:
 You need the _real_ Public Key component `n` (aka modulus). It is fed to the compiler via a byte list as CMake variable `UID_PUBKEY_BYTES`.
 This list can be generated from an integer string using the `int_to_bytes.py` script:
 ```
-int_to_bytes.py 13731707816857396218511477189051880183926672022487649441793167544537
-130,99,238,192,232,47,187,99,222,116,140,101,233,231,57,188,204,204,187,241,173,147,88,60,217,7,80,217
+int_to_bytes.py 15016110316963555528094624349113466362595255853754721542742065372959
+142,150,36,100,67,65,165,144,151,44,243,27,134,236,69,135,50,41,123,232,54,232,135,3,245,185,95,31
 ```
 
 Example build commandline script:
@@ -34,3 +34,12 @@ cmake \
   ..
 make
 ```
+
+## Example key for the server
+
+An example key for the server is provided in the file `faf-server.example.pem`.
+The public key modulus `n` is `15016110316963555528094624349113466362595255853754721542742065372959`,
+which translates to the pre-set bytes `142,150,36,100,67,65,165,144,151,44,243,27,134,236,69,135,50,41,123,232,54,232,135,3,245,185,95,31`.
+
+The Base64-DER-encoded private key for the server, you need to provide is
+`FAF_PRIVATE_KEY=MIGXAgEAAh0AjpYkZENBpZCXLPMbhuxFhzIpe+g26IcD9blfHwIDAQABAhwU8oHOKQNP63oKJHz6t5KY7jYsm3ZZubrLm4WBAg95Qr5XGWuT6fCZbnpFS88CDgEtBaEPHalBGWOQxPuxAg82LXTfc3MWLiKaWrr0dQ8CDSZLDgcPPeXDJhBXjrECDy6B4n8UrVVOIX/DC+Aakg==`.

@@ -49,7 +49,7 @@ endif()
 if(NOT DEFINED UID_PUBKEY_BYTES)
   message(WARNING "You need to set UID_PUBKEY_BYTES to the output of int_to_bytes.py. Using test public key.")
   set(UID_PUBKEY_BYTES
-    "130,99,238,192,232,47,187,99,222,116,140,101,233,231,57,188,204,204,187,241,173,147,88,60,217,7,80,217"
+    "142,150,36,100,67,65,165,144,151,44,243,27,134,236,69,135,50,41,123,232,54,232,135,3,245,185,95,31"
     CACHE STRING
     "the public key used for encryption"
     )
