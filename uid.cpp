@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
   if (!machine_info_init())
   {
     std::cerr << "Error initialising machine_info" << std::endl;
-    return 1;
   }
 
   root["machine"]["uuid"] = machine_info_uuid();
