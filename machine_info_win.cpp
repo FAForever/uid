@@ -55,7 +55,7 @@ bool machine_info_init()
               << hres
               << std::endl;
     CoUninitialize();
-    return NULL;                    // Program has failed.
+    return false;                    // Program has failed.
   }
 
   // Step 3: ---------------------------------------------------
