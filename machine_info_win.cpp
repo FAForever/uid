@@ -247,6 +247,10 @@ std::string wmi_value(std::wstring const& table,
                       std::wstring const& property,
                       std::wstring const& filter = std::wstring())
 {
+  if (pSvc == NULL)
+  {
+    return exc_value;
+  }
   std::vector<std::string> values = read_wmi_values(table,
                                 property,
                                 filter);
@@ -292,6 +296,10 @@ std::string machine_info_display_width()
 {
   std::string v_mode_desc = wmi_value(L"Win32_VideoController",
                                       L"VideoModeDescription");
+  if (v_mode_desc == exc_value)
+  {
+    return exc_value;
+  }
   return match_regex(v_mode_desc, "(\\d+) x \\d+ x \\d+ colors");
 }
 
@@ -299,6 +307,10 @@ std::string machine_info_display_height()
 {
   std::string v_mode_desc = wmi_value(L"Win32_VideoController",
                                       L"VideoModeDescription");
+  if (v_mode_desc == exc_value)
+  {
+    return exc_value;
+  }
   return match_regex(v_mode_desc, "\\d+ x (\\d+) x \\d+ colors");
 }
 
