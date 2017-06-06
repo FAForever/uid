@@ -43,3 +43,12 @@ which translates to the pre-set bytes `142,150,36,100,67,65,165,144,151,44,243,2
 
 The Base64-DER-encoded private key for the server, you need to provide is
 `FAF_PRIVATE_KEY=MIGXAgEAAh0AjpYkZENBpZCXLPMbhuxFhzIpe+g26IcD9blfHwIDAQABAhwU8oHOKQNP63oKJHz6t5KY7jYsm3ZZubrLm4WBAg95Qr5XGWuT6fCZbnpFS88CDgEtBaEPHalBGWOQxPuxAg82LXTfc3MWLiKaWrr0dQ8CDSZLDgcPPeXDJhBXjrECDy6B4n8UrVVOIX/DC+Aakg==`.
+
+## Key Generation
+
+Generate private key: `openssl genrsa -out new_server_privkey.pem 2048`
+Derive public key from private key: `openssl rsa -in new_server_privkey.pem -outform PEM -pubout -out new_server_pubkey.pem`
+
+The private key for the server config has to be the base64-string in `new_server_privkey.pem` on one line without the armoring.
+
+To fold it into one line: `tr -d '\n' < new_server_privkey.pem > new_server_privkey_nn.pem`
