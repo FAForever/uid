@@ -27,7 +27,7 @@ matrix:
         -DCRYPTOPP_LIBRARIES=/usr/lib/mxe/usr/$MXE_TARGET/lib/libcryptopp.a
         -DCRYPTOPP_INCLUDE_DIRS=/usr/lib/mxe/usr/$MXE_TARGET/include
         -DUID_SKIP_LEGACY=On
-        -DUID_PUBKEY_BYTES=$(../encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus))
+        -DUID_PUBKEY_BYTES=$(../encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in ../faf_pub.pem -pubin -modulus))
         ..
       - make -j8
       - cd ..
@@ -81,7 +81,7 @@ matrix:
         -DCRYPTOPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR
         -DCMAKE_CXX_FLAGS="-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562"
         -DCMAKE_BUILD_TYPE=MinSizeRel
-        -DUID_PUBKEY_BYTES=$(../encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus))
+        -DUID_PUBKEY_BYTES=$(../encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in ../faf_pub.pem -pubin -modulus))
         ..
       - make -j8
       - cd ..
