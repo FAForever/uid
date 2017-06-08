@@ -14,9 +14,14 @@ Create a 2048 bit RSA key using openssl:
 openssl genrsa -out faf_priv.pem 2048
 ```
 
+Create the public key part which is stored encrypted in this repo:
+```
+openssl rsa -in faf_priv.pem -pubout -out faf_pub.pem
+```
+
 Now generate the UID_PUBKEY_BYTES string variable you need to pass to CMake with
 ```
-./encode_openssl_modulus.py `openssl rsa -noout -inform PEM -in ./faf_priv.pem -modulus`
+./encode_openssl_modulus.py `openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus`
 ```
 which should result in
 ```

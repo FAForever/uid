@@ -14,10 +14,12 @@ matrix:
       - sudo apt-key adv --keyserver x-hkp://keys.gnupg.net --recv-keys D43A795B73B16ABE9643FE1AFD8FFF16DB45C6AB
       - sudo apt-get update
       - sudo apt-get --yes install
+        openssl
         python3
         mxe-$MXE_TARGET-jsoncpp
         mxe-$MXE_TARGET-cryptopp
         mxe-$MXE_TARGET-icu4c
+      - openssl aes-256-cbc -K $encrypted_13e88f9b9a4f_key -iv $encrypted_13e88f9b9a4f_iv -in faf_pub.pem.enc -out faf_pub.pem -d
       script:
       - mkdir build && cd build
       - $MXE_DIR/usr/bin/$MXE_TARGET-cmake
@@ -25,7 +27,7 @@ matrix:
         -DCRYPTOPP_LIBRARIES=/usr/lib/mxe/usr/$MXE_TARGET/lib/libcryptopp.a
         -DCRYPTOPP_INCLUDE_DIRS=/usr/lib/mxe/usr/$MXE_TARGET/include
         -DUID_SKIP_LEGACY=On
-        -DUID_PUBKEY_BYTES=`../encode_openssl_modulus.py $modulus`
+        -DUID_PUBKEY_BYTES=$(../encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus))
         ..
       - make -j8
       - cd ..
@@ -42,6 +44,7 @@ matrix:
             - cmake
             - cmake-data
             - python3
+            - openssl
       env:
       - UID_FILENAME=faf-uid
       - UID_PLATFORM='linux'
@@ -67,6 +70,7 @@ matrix:
       - cd cryptopp
       - make -j8 -f GNUmakefile CXX=g++-6 CXXFLAGS='-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562 -DNDEBUG -O3' libcryptopp.a
       - cd ..
+      - openssl aes-256-cbc -K $encrypted_13e88f9b9a4f_key -iv $encrypted_13e88f9b9a4f_iv -in faf_pub.pem.enc -out faf_pub.pem -d
       script:
       - mkdir build && cd build
       - cmake
@@ -77,7 +81,7 @@ matrix:
         -DCRYPTOPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR
         -DCMAKE_CXX_FLAGS="-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562"
         -DCMAKE_BUILD_TYPE=MinSizeRel
-        -DUID_PUBKEY_BYTES=`../encode_openssl_modulus.py $modulus`
+        -DUID_PUBKEY_BYTES=$(../encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus))
         ..
       - make -j8
       - cd ..
@@ -91,7 +95,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: XU9Af7DsMYeKJ1ZfdJmQ5W0zjp9xPQB8VLibW2G/QSBXc6CW0MBY2RRRwsbi0SS20JhUv52H2hfWovKa40Y2unwstRbsTkIaI+ZifiCyOmB7uiqDomZARWzIASipO+NUWDyjOhRfqWGHXfLgQTM8PxYUm0kgnMyDypgf77XhPbP8DPhjQkGG/Y8xJbPh9DcWUNPOybVGhna1ENtoIuooO4Iz3sTWQ7aE0iMLLeTP2fGaKo8rYNqT8gDlAqDkK09+h1AAwO2pzpUBsIdPXDgBkxJN5/XWlAvjAH5S9WSwrrYX1R1ZVp5ALwBWG9L9C7YLrVLL7Cv47asWD3aVi7pm82NxKsMzK/RW9vqLUycVmrlVyvaJzD4eEcthXoNTeQay5Mty3lPEXcTs56P92HqPx+Ek5EdZXFDYmIhSNE2cawQ6n0Z5b6qcLJND7xVVk3O7Shh8EA08tzfDkGIZGBBYOAIKOB/bfQprka4ppMjcYNY/uriA3mlaaZDnA+Wdq8EoXX7r8in/ky9ZeXJ+ZRv0K+BZ90CkKBTYrd7YpEa61YySO1H1xESHfsCwz620Ib48tySgNPkArAXX21Qnb5vH4FWU6iVgaNn2/qZSUsI0jhv84yfNTWAbSdnxHoBC48+2DBZC9FqTtVo1FhBltkxfbubybaer3vMqa5+kPyRM1mY=
+    secure: kvzwAY9Wsc9j0OvantE+nahfSadGQX+y2L8WHfk8T9uCpUZbR4pvunO4a2AXNBPxgRwMonTuZ8DZ6JyK+0x5TQekSJfQXgqlccFjJRfmpI3hd1wk/RbCko4wzSmU9hlbOFbetTU6Pz0LtYWSahZpgy1wMB1PfuSDP1qPFG5iJJqu1T3kexTJgenxkWqmOf02ZB1OMqFouzSnCOHbUUNDxLcHequ1EZcJQPhsMfoSo4rwpmVG01j/kj6T91XVAi0ZsMAgXzIyKfna36fnW0P6273d11TV1su9yr8/B+ZmC8zwRyqNu7G3f57nTxSY+nY6gZupyegM6bTUvOCiKeG8QuyhGsJ7vHKcqqsk2kysOjrupSioCFpegzNd7QmbVSyaJtLnGcuYCjXI/CqB096ziOxa3yGWEvCz0bTteXVR3ZXmkCO+1keu6R5Q3f1esx4eGbb+mmu0z19DLECrhRkHg6jFaJzcJJvtPh7ZW9bh+mjsBG4+koAgcQU40LWdKvzA6MGUxHPbz9fzTn6oXBIsC8HABCYKo5nL4NyFY19Fl7QOm3+RyDP3/EoGv2k4pcfJEbCLC3D9FsDEQMF7kd/vPrkneYLh0BVx5JDLMJN4l6QTY/YGGhEbYRAPegIj3MLth2nmeGeSBFBw/MgszWviubz35buqaH8e/67B7gVggK4=
   file: "${RELEASE_PKG_FILE}"
   skip_cleanup: true
   on:
