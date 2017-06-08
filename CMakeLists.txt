@@ -64,6 +64,7 @@ add_executable(faf-uid
   ${machine_info_src}
   README.md
   .travis.yml
+  encode_openssl_modulus.py
   )
 
 # Disable console window popping up when running the exe from Python
