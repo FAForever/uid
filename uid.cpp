@@ -16,7 +16,7 @@
 #include "machine_info.h"
 
 #if !defined(UID_PUBKEY_BYTES)
-#  error "You must #define UID_PUBKEY_BYTES as 28 sized byte list, eg. '130,99,238,192,232,47,187,99,222,116,140,101,233,231,57,188,204,204,187,241,173,147,88,60,217,7,80,217'"
+#  error "You must #define UID_PUBKEY_BYTES as 256 sized byte list, eg. '130,99,...'"
 #endif
 
 int main(int argc, char *argv[])
@@ -88,10 +88,10 @@ int main(int argc, char *argv[])
     assert(iv_b64.size() == 24);
 
     /* create the RSA Public key from the UID_PUBKEY_BYTES #define */
-    uint8_t pubkey_bytes[28] = {UID_PUBKEY_BYTES};
+    uint8_t pubkey_bytes[256] = {UID_PUBKEY_BYTES};
     CryptoPP::RSA::PublicKey publicKey;
     CryptoPP::Integer modulus;
-    modulus.Decode(pubkey_bytes, 28);
+    modulus.Decode(pubkey_bytes, 256);
     publicKey.Initialize(modulus, 65537);
 
     /* encrypt the AES key and encode the encryptes key to base64 */

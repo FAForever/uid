@@ -25,7 +25,7 @@ matrix:
         -DCRYPTOPP_LIBRARIES=/usr/lib/mxe/usr/$MXE_TARGET/lib/libcryptopp.a
         -DCRYPTOPP_INCLUDE_DIRS=/usr/lib/mxe/usr/$MXE_TARGET/include
         -DUID_SKIP_LEGACY=On
-        -DUID_PUBKEY_BYTES=`../int_to_bytes.py $n`
+        -DUID_PUBKEY_BYTES=`../encode_openssl_modulus.py $modulus`
         ..
       - make -j8
       - cd ..
@@ -77,26 +77,21 @@ matrix:
         -DCRYPTOPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR
         -DCMAKE_CXX_FLAGS="-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562"
         -DCMAKE_BUILD_TYPE=MinSizeRel
-        -DUID_PUBKEY_BYTES=`../int_to_bytes.py $n`
+        -DUID_PUBKEY_BYTES=`../encode_openssl_modulus.py $modulus`
         ..
       - make -j8
       - cd ..
-
-env:
-  global:
-  - secure: gZJEU+r0BJYH3GxoQAUWUUAse6VlOT28pTnT07ft2vrutTr0Q9383OpNlxkCZ34BBXr2hDlwAYkO1oy4lLQoyjAe59KPSuTmbGZloI/4DojEuwxf5rDHeVK8YkA/cmP6UW2BHpBOCYor4l0lz9XihFPuiriiRiy0BkRK3mwMTBO18SmjbxXw49si1/6oVJupuT4UYUHQbu6MNAYyIPcPQKMPEYOdV5AkIb9cKM+QMpExC+Sby/f/4m68J9MygcM+YMbb+PuWvuUot4FzTrWjswLp1slbI8YdN7BoC4hyPlW9Tuquq40WSTeTf2S/BS1qkfvFHpddF5OEcGvfkameg7mo1J1ZZWv8wlrM513FWM+t4QKNkXadqFetbznm94bNrnVvU6R7Z7Utf4+zl4TW9z5lb8KyO+nu/qFlWf2qORyyVTmxXeLXaK9ZDtr5QFgPfk4tKcVlnD2ECtYcm35TtEJF5dkOpETYG30W+6fd1glw3oQKj5gWJrPCC50mss3C/zsWN2tHTbeGSgix3hNrDsJuMcELkDdJIkAAhn1WnVyAfdt5hSX9A0S4W131G5t6I00lZs1e+ZAzOr5+LvotLtg1W48xIQtrbv2GEBkZEyV/bsOoLSyTLFelN6ehiq/eALQEhHodxx8P3tDgi5jG4SKPcqdi6fSwnGfPvpbZbMI=
-  - secure: V23UleSDM9vYuhFY68JY+VPBNF1DxFh0y7LB9U0RNql05dJv02QjU+W/eteAJ+VkhqrIq1XDaIMYp3/eon+tT+iT9xtIdaj0DreaWu0paCfaVITOHBYARDmTwwo7i/NvUdZbAyjKEc7dpxBkZwHZCpu9dIUOqXGg/cKmDQdKeNsNITJOsudueeeMp1P5eWj1om/PH/8PhwteSvJwTPXOKIhAj2IVL4EkiFkMEA9cIF4u/y6IkugnJsDCBqnr5SsioM6XXEbe6i0l9/ngSs2y20peFNnSITrzw/2xKlolLHfmFO/0ubmHAxBXC5W9cP4Fk2FGdY10rFh6MoCjgyjUYm0xfP+s6Nhx4yjkG9kNm1CXkl4TZyNdQu2qoVsrLJhZ4Y/yPiusmuWZWdlxu2l10UPrt35VtZtD5VosNZ/otMHErv/TLwEzqw3rpPW48Cyx/HeVg4PMTKad0amIsGpykW3ghLh7N0cvBqh3b0Yk7k2UsLf/6I7f1OcleUejDNpkoC/fjMSB/jQ6B3LfFMrzMur5kzzoqla6TLp/OWs9eoGXeu9Iw58XmvvMkcoNCQgntT2tm9t7XaOpURHDpKGwl5G59DbpWXFTq9qF5gjhT/9EuH18OtEzhkBA+jivR2P7lj9NeQMDqkww4wmgf740+8dcq82thqgY+Cckf/X2XZM=
 
 script:
   - echo "Nothing."
 
 before_deploy:
   - export RELEASE_PKG_FILE=./build/$UID_FILENAME
-  
+
 deploy:
   provider: releases
   api_key:
-    secure: WhOx05Op3wMQaCxCzjMfLX75z3xyElczH6lAFKltpWyRoacYgfFW0Z73he1f0AUCcXbuFB/oxlpIPwQNxv5xisJBoDDgcz0FWxe0Dig8KooVcvp5OAhL44qWpIH5fkFRSHZ+zNdR3mmmGVd17dKmRxvMdTqUxp4dYtZfRTMKDzZt/2+IqAHizUmBlZsLzyjeLyMQcKzNlpuh71hGo73LiaU6pCKdp46GSWOkJpMoSTI0jlym6viVkEjskjU5umY+TPZ39ud3BxjuUtDpMo7ph3j+2rK080m5Vj5n33aHoOKUW3fyC1vOEz1pyVHc2jXd9A8UhYg7RXK2RPbr9vet9rmM2Y/29UV6RGy3BfpR9rc+Phrj9hyloJ6x2m3Sy7TZZw0/d2zkj/+gkY30bHklhxHipDBT5K3qdZwWEVCdSaO9ucI4WAXKvYXXIxv+dcFjW0HL3vrxZO5eD+pPHw2Q3n2bzJ8pjBuxyHJ3WW/f73tlargXXS6VsN8YPpp/BmBzEAGTHGv7bvB6CTrdgZiJ8EDsWaILXObzYwUKa/fMZ/KlX+JQmSlXdJAUoRdegBq+9YC7teJbZbzksEQtvHbz46gmdO+qV9r+D3evPobUUHlSp6Hy0egp+d1OHPeAOd42yjmuJEIcvGgPGSAab3nsxvjZPYmgiQ8dvw4iYlSIHOY=
+    secure: dXe34Fx7IZJHnCDr1POgDI2Klm+R+PSh/r7oPFZwAN3A2Rgwmj5zLD3EeFIOUNqsB2ROtqzInhRAuHvPsEauPqSk2cgoWNQA3BpemgiXvaVGsMXsEFl05bURcC1ViWsI0DNGJSyLGlWphXV1LmqBXMcbUwv2dv4hVBU3ZR3FYVtd2dYgq1Ee3FRy1ZjTbTF495F4kEtYbQYYaq8jpW+cn5LTATu0enRZ/TC4b9AmgoTMYcjarw8DOZW59jogHFJYoTAdjklhyzpDdhuFS7ASkedX/ZsGYKbl9cllHBPo8hjxLGtLWbclHN2qob6n7QT4oa6k7pEnw2/TCjglKB4cuG0vhmtexNKFD4UMLdqxIqaSj2tsIyopXSf/qjwq9PMdxlY3Po+v1I/BdcT6U4c14wDpUE+ouyO5yhTF3zDJidJNnu8B0BgbVENuvax06Mw6/ho7Tt8YUANQ6h0RrrU71TBmG430S2hdOct2Fu9HNs+9zPGyX97lGPEVkYflaAtN83//oWijdxvh52UsRYdyu9n6rTdOr6CCeNY2TH7qe0kVTGZECCSW4fZ+/gNkFk5Xg2kx4R+jm0PsYEaFLVzZsWR0RnbJVFYZiBiWPABKAA3DtesRdL0DPI6VkvJx1bKJ9Ltwtu7fH6CVAQrHaL0gI7Bsk5t6ZwMONMBO8uAgOuA=
   file: "${RELEASE_PKG_FILE}"
   skip_cleanup: true
   on:
