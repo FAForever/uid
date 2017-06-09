@@ -106,9 +106,6 @@ int main(int argc, char *argv[])
           )
       );
     }
-    /* the server expects 40 bytes */
-    assert(aes_key_encrypted_base64.size() == 40);
-
     /* now encrypt the JSON string with AES */
     std::string json_string_encrypted_b64;
     {
@@ -130,8 +127,8 @@ int main(int argc, char *argv[])
       /* the final bytearray consists of the
          1 byte paddingSize
          24 bytes IV (base64)
-         X bytes encrypted JSON (base64)
-         40 bytes encrypted AES key (base64) */
+         X bytes AES encrypted JSON (base64)
+         344 bytes RSA encrypted AES key (base64) */
       CryptoPP::Base64Encoder b(
               new CryptoPP::FileSink(std::cout), false /*insertLineBreaks*/
           );
