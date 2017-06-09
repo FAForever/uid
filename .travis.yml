@@ -100,3 +100,4 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+  prerelease: true
