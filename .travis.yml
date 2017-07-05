@@ -32,17 +32,18 @@ matrix:
       - make -j8
       - cd ..
     - os: linux
-      sudo: false
+      dist: trusty
+      sudo: require
       compiler: gcc
+      language: cpp
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - george-edison55-precise-backports
           packages:
+            - gcc-6
             - g++-6
             - cmake
-            - cmake-data
             - python3
             - openssl
       env:
@@ -50,14 +51,15 @@ matrix:
       - UID_PLATFORM='linux'
       - JSONCPP_VERSION=1.7.7
       - CRYPTOPP_VERSION=5_6_5
-      install:
+      script:
+      - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
+      - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
       - wget https://github.com/open-source-parsers/jsoncpp/archive/$JSONCPP_VERSION.tar.gz -O jsoncpp.tar.gz
       - tar xfz jsoncpp.tar.gz
       - mkdir jsoncpp-build
       - cd jsoncpp-build
       - cmake
         -DCMAKE_BUILD_TYPE=MinSizeRel
-        -DCMAKE_CXX_COMPILER=g++-6
         -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
         -DBUILD_STATIC_LIBS=ON
         -DBUILD_SHARED_LIBS=OFF
@@ -68,13 +70,11 @@ matrix:
       - unzip ./cryptopp.zip
       - mv cryptopp-CRYPTOPP_$CRYPTOPP_VERSION cryptopp
       - cd cryptopp
-      - make -j8 -f GNUmakefile CXX=g++-6 CXXFLAGS='-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562 -DNDEBUG -O3' libcryptopp.a
+      - make -j8 -f GNUmakefile CXXFLAGS='-DCRYPTOPP_NO_BACKWARDS_COMPATIBILITY_562 -DNDEBUG -O3' libcryptopp.a
       - cd ..
       - openssl aes-256-cbc -K $encrypted_13e88f9b9a4f_key -iv $encrypted_13e88f9b9a4f_iv -in faf_pub.pem.enc -out faf_pub.pem -d
-      script:
       - mkdir build && cd build
       - cmake
-        -DCMAKE_CXX_COMPILER=g++-6
         -DJSONCPP_LIBRARIES=$TRAVIS_BUILD_DIR/jsoncpp-build/src/lib_json/libjsoncpp.a
         -DJSONCPP_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/jsoncpp-$JSONCPP_VERSION/include
         -DCRYPTOPP_LIBRARIES=$TRAVIS_BUILD_DIR/cryptopp/libcryptopp.a
