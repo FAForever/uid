@@ -42,6 +42,8 @@ if (WIN32)
     ${ICU_LIBRARIES}
     wbemuuid.lib
       )
+elseif(APPLE)
+  set(machine_info_src machine_info_mac.cpp)
 else()
   set(machine_info_src machine_info_linux.cpp)
 endif()
@@ -61,7 +63,10 @@ if (WIN32)
   add_definitions(-DWIN32FAFUID)
 endif()
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+# macOS does not support fully-static linking
+if(NOT APPLE)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
 
 add_executable(faf-uid
   uid.cpp
@@ -83,10 +88,15 @@ target_link_libraries(faf-uid
   ${machine_info_libs}
   )
 
-# Strip exe to reduce file size
+# Strip exe to reduce file size (macOS strip does not accept -s)
+if(APPLE)
+  set(UID_STRIP_FLAGS)
+else()
+  set(UID_STRIP_FLAGS -s)
+endif()
 add_custom_command(TARGET faf-uid
   POST_BUILD
-  COMMAND ${CMAKE_STRIP} -s "$<TARGET_FILE:faf-uid>"
+  COMMAND ${CMAKE_STRIP} ${UID_STRIP_FLAGS} "$<TARGET_FILE:faf-uid>"
   COMMENT "Stripping executable $<TARGET_FILE_NAME:faf-uid>"
   )
 

@@ -143,8 +143,62 @@ jobs:
           name: faf-uid-linux
           path: build/faf-uid
 
+  build-macos:
+    runs-on: macos-latest
+    environment: release
+    env:
+      PUB_KEY: ${{ secrets.UID_PUBLIC_KEY_PEM }}
+      JSONCPP_VERSION: 1.7.7
+      CRYPTOPP_VERSION: 8_9_0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write PUB key into file
+        run: echo "$PUB_KEY" > faf_pub.pem
+
+      - name: Build jsoncpp
+        run: |
+          wget https://github.com/open-source-parsers/jsoncpp/archive/$JSONCPP_VERSION.tar.gz -O jsoncpp.tar.gz
+          tar xfz jsoncpp.tar.gz
+          cmake \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
+            -DBUILD_STATIC_LIBS=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            -B jsoncpp-build \
+            -S jsoncpp-$JSONCPP_VERSION
+          make -C jsoncpp-build
+
+      - name: Build cryptopp
+        run: |
+          wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_$CRYPTOPP_VERSION.zip -O cryptopp.zip
+          unzip ./cryptopp.zip
+          mv cryptopp-CRYPTOPP_$CRYPTOPP_VERSION cryptopp
+          # cryptopp 8.9.0's GNUmakefile needs explicit arch/stdlib flags on
+          # Apple Silicon, its auto-detection is insufficient there.
+          make -C cryptopp -f GNUmakefile CXXFLAGS='-DNDEBUG -O3 -stdlib=libc++ -arch arm64' libcryptopp.a
+
+      - name: Build
+        run: |
+          cmake \
+            -DJSONCPP_LIBRARIES=$(pwd)/jsoncpp-build/src/lib_json/libjsoncpp.a \
+            -DJSONCPP_INCLUDE_DIRS=$(pwd)/jsoncpp-$JSONCPP_VERSION/include \
+            -DCRYPTOPP_LIBRARIES=$(pwd)/cryptopp/libcryptopp.a \
+            -DCRYPTOPP_INCLUDE_DIRS=$(pwd)/cryptopp \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DUID_PUBKEY_BYTES=$(./encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
+            -B build
+          make -C build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: faf-uid-macos
+          path: build/faf-uid
+
   create-release:
-    needs: [build-windows, build-linux]
+    needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
 
     steps:
@@ -160,6 +214,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: faf-uid-linux
+          path: release-artifacts/
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: faf-uid-macos
           path: release-artifacts/
 
       - name: Create release
