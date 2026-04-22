@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 project(faf-uid CXX C)
 
@@ -21,15 +21,17 @@ if(NOT DEFINED JSONCPP_LIBRARIES)
 endif()
 
 include_directories(${JSONCPP_INCLUDE_DIRS})
+link_directories(${JSONCPP_LIBRARY_DIRS})
 
 if(NOT DEFINED CRYPTOPP_LIBRARIES)
   if(NOT PKGCONFIG_FOUND)
     find_package(PkgConfig REQUIRED)
   endif()
-  pkg_search_module(CRYPTOPP REQUIRED cryptopp)
+  pkg_search_module(CRYPTOPP REQUIRED libcryptopp cryptopp)
 endif()
 
 include_directories(${CRYPTOPP_INCLUDE_DIRS})
+link_directories(${CRYPTOPP_LIBRARY_DIRS})
 
 if (WIN32)
   if(NOT PKGCONFIG_FOUND)
