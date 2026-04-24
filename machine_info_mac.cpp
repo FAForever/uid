@@ -118,8 +118,13 @@ std::string machine_info_disks_controllerid()
 
 std::string machine_info_disks_vserial()
 {
+  // Anchor to the exact "UUID" key — ioreg output for IOMedia can
+  // include other keys containing the substring UUID (e.g.
+  // "VolGroupUUID", "Content Hint UUID"), and an unanchored /UUID/
+  // would match those first on any machine where they appear above
+  // the plain "UUID" line.
   return exec("ioreg -rd1 -c IOMedia "
-              "| awk '/UUID/ { gsub(/\"/, \"\", $3); print $3; exit }'");
+              "| awk '/\"UUID\" =/ { gsub(/\"/, \"\", $3); print $3; exit }'");
 }
 
 std::string machine_info_bios_manufacturer()
@@ -150,7 +155,13 @@ std::string machine_info_bios_date()
 
 std::string machine_info_bios_version()
 {
-  return exec("sysctl -n kern.osrelease");
+  // Apple Silicon has no BIOS; the equivalent is the BootROM /
+  // System Firmware Version. This is stable across macOS updates
+  // (only changes on firmware updates), so it gives a durable
+  // fingerprint contribution — unlike kern.osrelease, which changes
+  // with every OS point release.
+  return exec("system_profiler SPHardwareDataType "
+              "| awk -F': ' '/System Firmware Version/ {print $2; exit}'");
 }
 
 std::string machine_info_processor_name()
