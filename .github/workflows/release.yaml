@@ -75,7 +75,10 @@ jobs:
 
       - name: Build
         run: |
-          $MXE_DIR/usr/bin/$MXE_TARGET-cmake \
+          # Use system cmake with MXE's toolchain file; MXE's bundled cmake
+          # links against libssl.so.1.1 which Ubuntu 24.04 doesn't provide.
+          cmake \
+            -DCMAKE_TOOLCHAIN_FILE=$MXE_DIR/usr/$MXE_TARGET/share/cmake/mxe-conf.cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCRYPTOPP_LIBRARIES=$MXE_DIR/usr/$MXE_TARGET/lib/libcryptopp.a \
             -DCRYPTOPP_INCLUDE_DIRS=$MXE_DIR/usr/$MXE_TARGET/include \
