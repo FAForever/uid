@@ -190,12 +190,15 @@ jobs:
             -DUID_PUBKEY_BYTES=$(./encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
             -B build
           make -C build
+          # Rename so this artifact's file doesn't collide with Linux's
+          # `faf-uid` when both are extracted into release-artifacts/.
+          mv build/faf-uid build/faf-uid-macos
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: faf-uid-macos
-          path: build/faf-uid
+          path: build/faf-uid-macos
 
   create-release:
     needs: [build-windows, build-linux, build-macos]
