@@ -55,3 +55,14 @@ cmake \
   ..
 make
 ```
+
+## Signing issues
+
+### MacOS
+
+Since the file is downloaded from the internet, MacOS will block the execution. We need to set the execution bit and remove a quarantine tag locally on the users machine.
+
+```sh
+chmod +x ./faf-uid-macos
+xattr -d com.apple.quarantine ./faf-uid-macos
+```
