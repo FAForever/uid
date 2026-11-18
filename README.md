@@ -66,3 +66,50 @@ Since the file is downloaded from the internet, MacOS will block the execution. 
 chmod +x ./faf-uid-macos
 xattr -d com.apple.quarantine ./faf-uid-macos
 ```
+
+## Android
+
+`machine_info_android.cpp` is used when CMake runs with the NDK's toolchain file:
+```bash
+cmake \
+  -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+  -DANDROID_ABI=arm64-v8a \
+  -DANDROID_PLATFORM=android-26 \
+  -DJSONCPP_LIBRARIES=/path/to/libjsoncpp.a \
+  -DJSONCPP_INCLUDE_DIRS=/path/to/jsoncpp/include \
+  -DCRYPTOPP_LIBRARIES=/path/to/libcryptopp.a \
+  -DCRYPTOPP_INCLUDE_DIRS=/path/to/cryptopp/include \
+  -DUID_PUBKEY_BYTES=200,172,... \
+  ..
+```
+Crypto++ builds for Android with its `GNUmakefile-cross` after `source TestScripts/setenv-android.sh 26 arm64-v8a` in its folder, with `ANDROID_NDK_ROOT` and `ANDROID_SDK_ROOT` set. The `build-android` job in `.github/workflows/release.yaml` has every step.
+
+### Running it from an app
+
+Since Android 10 an app may execute its own files only from its `nativeLibraryDir`. So the app ships the executable in its APK as `lib/<abi>/libfafuid.so`, with native libraries extracted on install (`android:extractNativeLibs="true"`, or `useLegacyPackaging = true` in Gradle's `packaging.jniLibs`), and runs it like `faf-uid <session>` on the other platforms:
+
+```java
+ProcessBuilder pb = new ProcessBuilder(
+    new File(getApplicationInfo().nativeLibraryDir, "libfafuid.so").getPath(), session);
+pb.environment().put("FAF_UID_ANDROID_ID",
+    Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
+```
+
+Only Java can read `Settings.Secure.ANDROID_ID`, so the app passes it in `FAF_UID_ANDROID_ID`. Without it, `uuid` is `invalid`.
+
+### What it collects
+
+| field | value |
+|---|---|
+| `uuid` | `Settings.Secure.ANDROID_ID`, from `FAF_UID_ANDROID_ID` |
+| `model`, `manufacturer` | `Build.MODEL`, `Build.MANUFACTURER` |
+| `motherboard.vendor`, `motherboard.name` | `Build.BRAND`, `Build.BOARD` |
+| `processor.name` | `Build.SOC_MODEL` (Android 12 and later), else the `model name` or `Hardware` line of `/proc/cpuinfo` |
+| `os.type`, `os.version` | `Android`, `Build.VERSION.RELEASE` |
+
+faf-uid reads the `Build` values itself, from the system properties behind them (`ro.product.model` and so on). Every other field is `invalid`:
+* Android gives apps no hardware serials. Since Android 10 the serial number and the IMEI need a permission that only system apps get, and the MAC address is hidden.
+* faf-uid uses neither the MediaDrm (Widevine) device id, which the user cannot reset, nor the Advertising ID.
+* The display size only Java knows, and it is the same for every phone of a model. The bootloader version changes with every system update.
+
+`ANDROID_ID` (Android 8.0 and later) is scoped to the app's signing key and the user. It stays the same through app updates and reinstalls. Another signing key, another user or work profile, or a factory reset gives a new value.
