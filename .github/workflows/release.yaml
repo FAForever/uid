@@ -93,6 +93,64 @@ jobs:
           name: faf-uid-windows
           path: build/faf-uid.exe
 
+  build-windows-arm64:
+    runs-on: windows-11-arm
+    environment: release
+    env:
+      PUB_KEY: ${{ secrets.UID_PUBLIC_KEY_PEM }}
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # MXE has no ARM64 target, so this job builds natively with MSYS2's
+      # CLANGARM64 environment, which has static jsoncpp, cryptopp and ICU.
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANGARM64
+          install: >-
+            mingw-w64-clang-aarch64-cc
+            mingw-w64-clang-aarch64-cmake
+            mingw-w64-clang-aarch64-ninja
+            mingw-w64-clang-aarch64-pkgconf
+            mingw-w64-clang-aarch64-jsoncpp
+            mingw-w64-clang-aarch64-crypto++
+            mingw-w64-clang-aarch64-icu
+            mingw-w64-clang-aarch64-python
+            openssl
+
+      - name: Write PUB key into file
+        run: echo "$PUB_KEY" > faf_pub.pem
+
+      - name: Build
+        run: |
+          # ICU 75 and later need C++17; CMake puts this standard after the
+          # -std=c++11 of CMakeLists.txt, so it wins. U_STATIC_IMPLEMENTATION
+          # makes ICU's headers link its static library instead of its DLL,
+          # so the exe stays a single file like the x64 one.
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_STANDARD=17 \
+            -DCMAKE_CXX_EXTENSIONS=OFF \
+            -DCMAKE_CXX_FLAGS=-DU_STATIC_IMPLEMENTATION \
+            -DCRYPTOPP_LIBRARIES=$MINGW_PREFIX/lib/libcryptopp.a \
+            -DCRYPTOPP_INCLUDE_DIRS=$MINGW_PREFIX/include \
+            -DUID_SKIP_LEGACY=On \
+            -DUID_PUBKEY_BYTES=$(python encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
+            -B build
+          cmake --build build
+          # Next to the x64 faf-uid.exe in the release
+          mv build/faf-uid.exe build/faf-uid-arm64.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: faf-uid-windows-arm64
+          path: build/faf-uid-arm64.exe
+
   build-linux:
     runs-on: ubuntu-latest
     environment: release
@@ -205,7 +263,7 @@ jobs:
           path: build/faf-uid-macos
 
   create-release:
-    needs: [build-windows, build-linux, build-macos]
+    needs: [build-windows, build-windows-arm64, build-linux, build-macos]
     runs-on: ubuntu-latest
 
     steps:
@@ -215,6 +273,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: faf-uid-windows
+          path: release-artifacts/
+
+      - name: Download Windows ARM64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: faf-uid-windows-arm64
           path: release-artifacts/
 
       - name: Download Linux artifact
