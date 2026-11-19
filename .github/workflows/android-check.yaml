@@ -1,0 +1,150 @@
+name: Android check
+
+# Builds the Android executable with a key made for this job alone, runs it on
+# an x86_64 emulator the way an app does, decrypts what it prints and checks
+# every field against the emulator's own data and against the Linux build.
+# FAF's key is never involved, so the job needs no secrets and runs on forks
+# and pull requests alike. The artifact holds both decrypted JSONs.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  android-check:
+    runs-on: ubuntu-latest
+    env:
+      JSONCPP_VERSION: 1.7.7
+      CRYPTOPP_VERSION: 8_9_0
+      NDK_VERSION: 29.0.14206865
+      # Android 8.0
+      ANDROID_API: 26
+      # Stand-ins: any session, and an ANDROID_ID-shaped value no device has
+      UID_SESSION: "4711"
+      UID_ANDROID_ID: "0123456789abcdef"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make a throwaway key
+        run: |
+          # Made on this runner, for this run only. The builds read
+          # faf_pub.pem as release.yaml's jobs do.
+          mkdir throwaway
+          openssl genrsa -out throwaway/key.pem 2048
+          openssl rsa -in throwaway/key.pem -pubout -out faf_pub.pem
+
+      - name: Install NDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$NDK_VERSION"
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+
+      - name: Download jsoncpp and cryptopp
+        run: |
+          wget https://github.com/open-source-parsers/jsoncpp/archive/$JSONCPP_VERSION.tar.gz -O jsoncpp.tar.gz
+          tar xfz jsoncpp.tar.gz
+          wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_$CRYPTOPP_VERSION.zip -O cryptopp.zip
+          unzip -q ./cryptopp.zip
+
+      - name: Build for Android
+        # release.yaml's build-android commands, for both ABIs
+        run: |
+          for abi in x86_64 arm64-v8a; do
+            cmake \
+              -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+              -DANDROID_ABI=$abi \
+              -DANDROID_PLATFORM=android-$ANDROID_API \
+              -DCMAKE_BUILD_TYPE=MinSizeRel \
+              "-DCMAKE_CXX_FLAGS_MINSIZEREL=-Os -DNDEBUG -Wno-implicit-int-float-conversion" \
+              -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+              -DJSONCPP_WITH_TESTS=OFF \
+              -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
+              -DBUILD_STATIC_LIBS=ON \
+              -DBUILD_SHARED_LIBS=OFF \
+              -B jsoncpp-build-$abi \
+              -S jsoncpp-$JSONCPP_VERSION
+            make -C jsoncpp-build-$abi
+
+            rm -rf cryptopp
+            cp -r cryptopp-CRYPTOPP_$CRYPTOPP_VERSION cryptopp
+            (cd cryptopp && source TestScripts/setenv-android.sh $ANDROID_API $abi && make -f GNUmakefile-cross -j"$(nproc)" static)
+
+            cmake \
+              -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+              -DANDROID_ABI=$abi \
+              -DANDROID_PLATFORM=android-$ANDROID_API \
+              -DJSONCPP_LIBRARIES=$(pwd)/jsoncpp-build-$abi/src/lib_json/libjsoncpp.a \
+              -DJSONCPP_INCLUDE_DIRS=$(pwd)/jsoncpp-$JSONCPP_VERSION/include \
+              -DCRYPTOPP_LIBRARIES=$(pwd)/cryptopp/libcryptopp.a \
+              -DCRYPTOPP_INCLUDE_DIRS=$(pwd)/cryptopp \
+              -DCMAKE_BUILD_TYPE=MinSizeRel \
+              -DUID_PUBKEY_BYTES=$(./encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
+              -B build-android-$abi
+            make -C build-android-$abi
+            cp build-android-$abi/faf-uid throwaway/faf-uid-android-$abi
+          done
+          # Phones run arm64-v8a; the emulator below runs x86_64
+          file throwaway/faf-uid-android-*
+
+      - name: Build for Linux
+        # release.yaml's build-linux commands
+        run: |
+          cmake \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
+            -DBUILD_STATIC_LIBS=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            -B jsoncpp-build-linux \
+            -S jsoncpp-$JSONCPP_VERSION
+          make -C jsoncpp-build-linux
+
+          rm -rf cryptopp
+          cp -r cryptopp-CRYPTOPP_$CRYPTOPP_VERSION cryptopp
+          make -C cryptopp -f GNUmakefile -j"$(nproc)" CXXFLAGS='-DNDEBUG -O3' libcryptopp.a
+
+          cmake \
+            -DJSONCPP_LIBRARIES=$(pwd)/jsoncpp-build-linux/src/lib_json/libjsoncpp.a \
+            -DJSONCPP_INCLUDE_DIRS=$(pwd)/jsoncpp-$JSONCPP_VERSION/include \
+            -DCRYPTOPP_LIBRARIES=$(pwd)/cryptopp/libcryptopp.a \
+            -DCRYPTOPP_INCLUDE_DIRS=$(pwd)/cryptopp \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DUID_PUBKEY_BYTES=$(./encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
+            -B build-linux
+          make -C build-linux
+          cp build-linux/faf-uid throwaway/faf-uid-linux
+
+      - name: Run it on Linux, for reference
+        run: |
+          mkdir out
+          ./throwaway/faf-uid-linux "$UID_SESSION" > out/linux.out
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run it on an x86_64 emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          script: python3 .github/android_check.py run throwaway/faf-uid-android-x86_64 "$UID_SESSION" "$UID_ANDROID_ID" out
+
+      - name: Decrypt and check every field
+        run: python3 .github/android_check.py check throwaway/key.pem "$UID_SESSION" "$UID_ANDROID_ID" out
+
+      - name: Upload both decrypted JSONs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-check
+          # out/ also holds the raw outputs and the device data they were
+          # checked against. throwaway/ holds the key and the builds made
+          # with it, to redo the check on another emulator. FAF's server
+          # cannot read what these builds send: never log in with them.
+          path: |
+            out/
+            throwaway/
