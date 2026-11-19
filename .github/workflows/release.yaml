@@ -9,7 +9,9 @@ on:
 
 jobs:
   build-windows:
-    runs-on: ubuntu-latest
+    # MXE's packages are for Ubuntu 20.04, and Ubuntu 26.04 (ubuntu-latest
+    # since October 2026) no longer has all of MXE's requirements below
+    runs-on: ubuntu-24.04
     environment: release
     env:
       PUB_KEY: ${{ secrets.UID_PUBLIC_KEY_PEM }}
