@@ -1,7 +1,6 @@
 #include "machine_info.h"
 
 #include <string>
-#include <sstream>
 #include <vector>
 
 #include <unicode/unistr.h>
@@ -233,7 +232,7 @@ std::vector<std::string> read_wmi_values(std::wstring const& table,
       }
       else if (vtProp.vt == VT_I4)
       {
-        result.push_back(static_cast< std::ostringstream & >(( std::ostringstream() << std::dec << vtProp.iVal ) ).str());
+        result.push_back(std::to_string(vtProp.iVal));
       }
 
       VariantClear(&vtProp);
