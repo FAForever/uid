@@ -46,6 +46,8 @@ if (WIN32)
       )
 elseif(APPLE)
   set(machine_info_src machine_info_mac.cpp)
+elseif(ANDROID)
+  set(machine_info_src machine_info_android.cpp)
 else()
   set(machine_info_src machine_info_linux.cpp)
 endif()
@@ -65,8 +67,10 @@ if (WIN32)
   add_definitions(-DWIN32FAFUID)
 endif()
 
-# macOS does not support fully-static linking
-if(NOT APPLE)
+# macOS does not support fully-static linking. Android always has its libc to
+# link against (the NDK links libc++ in statically), and a fully-static arm64
+# executable does not run under an x86_64 emulator's ARM translation.
+if(NOT APPLE AND NOT ANDROID)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 endif()
 

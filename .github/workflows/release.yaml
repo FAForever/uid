@@ -204,8 +204,90 @@ jobs:
           name: faf-uid-macos
           path: build/faf-uid-macos
 
+  build-android:
+    runs-on: ubuntu-latest
+    environment: release
+    strategy:
+      matrix:
+        abi: [arm64-v8a, x86_64]
+    env:
+      PUB_KEY: ${{ secrets.UID_PUBLIC_KEY_PEM }}
+      JSONCPP_VERSION: 1.7.7
+      CRYPTOPP_VERSION: 8_9_0
+      NDK_VERSION: 29.0.14206865
+      # Android 8.0
+      ANDROID_API: 26
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write PUB key into file
+        run: echo "$PUB_KEY" > faf_pub.pem
+
+      - name: Install NDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$NDK_VERSION"
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+
+      - name: Build jsoncpp
+        run: |
+          wget https://github.com/open-source-parsers/jsoncpp/archive/$JSONCPP_VERSION.tar.gz -O jsoncpp.tar.gz
+          tar xfz jsoncpp.tar.gz
+          # jsoncpp makes -Wconversion an error for Clang, and the NDK's clang
+          # counts jsoncpp's int-to-double range checks in it. The per-config
+          # flags come after jsoncpp's own, so the exception goes there.
+          cmake \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=${{ matrix.abi }} \
+            -DANDROID_PLATFORM=android-$ANDROID_API \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=-Os -DNDEBUG -Wno-implicit-int-float-conversion" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DJSONCPP_WITH_TESTS=OFF \
+            -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
+            -DBUILD_STATIC_LIBS=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            -B jsoncpp-build \
+            -S jsoncpp-$JSONCPP_VERSION
+          make -C jsoncpp-build
+
+      - name: Build cryptopp
+        run: |
+          wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_$CRYPTOPP_VERSION.zip -O cryptopp.zip
+          unzip ./cryptopp.zip
+          mv cryptopp-CRYPTOPP_$CRYPTOPP_VERSION cryptopp
+          cd cryptopp
+          # Sets the NDK's compiler and flags, and copies the NDK's
+          # cpu-features sources in, which cryptopp needs on Android.
+          source TestScripts/setenv-android.sh $ANDROID_API ${{ matrix.abi }}
+          make -f GNUmakefile-cross static
+
+      - name: Build
+        run: |
+          cmake \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=${{ matrix.abi }} \
+            -DANDROID_PLATFORM=android-$ANDROID_API \
+            -DJSONCPP_LIBRARIES=$(pwd)/jsoncpp-build/src/lib_json/libjsoncpp.a \
+            -DJSONCPP_INCLUDE_DIRS=$(pwd)/jsoncpp-$JSONCPP_VERSION/include \
+            -DCRYPTOPP_LIBRARIES=$(pwd)/cryptopp/libcryptopp.a \
+            -DCRYPTOPP_INCLUDE_DIRS=$(pwd)/cryptopp \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DUID_PUBKEY_BYTES=$(./encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
+            -B build
+          make -C build
+          # One file per ABI, named after the lib/<abi>/ folder an app
+          # ships it in.
+          mv build/faf-uid build/faf-uid-android-${{ matrix.abi }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: faf-uid-android-${{ matrix.abi }}
+          path: build/faf-uid-android-${{ matrix.abi }}
+
   create-release:
-    needs: [build-windows, build-linux, build-macos]
+    needs: [build-windows, build-linux, build-macos, build-android]
     runs-on: ubuntu-latest
 
     steps:
@@ -228,6 +310,13 @@ jobs:
         with:
           name: faf-uid-macos
           path: release-artifacts/
+
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: faf-uid-android-*
+          path: release-artifacts/
+          merge-multiple: true
 
       - name: Create release
         id: create_release
