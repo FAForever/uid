@@ -225,8 +225,13 @@ jobs:
         run: |
           wget https://github.com/open-source-parsers/jsoncpp/archive/$JSONCPP_VERSION.tar.gz -O jsoncpp.tar.gz
           tar xfz jsoncpp.tar.gz
+          # jsoncpp makes -Wconversion an error for Clang, and newer Apple
+          # clang (AppleClang 21 on macOS 26) counts jsoncpp's int-to-double
+          # range checks in it. The per-config flags come after jsoncpp's
+          # own, so the exception goes there.
           cmake \
             -DCMAKE_BUILD_TYPE=MinSizeRel \
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=-Os -DNDEBUG -Wno-implicit-int-float-conversion" \
             -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
