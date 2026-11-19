@@ -61,10 +61,6 @@ endif()
 
 add_definitions(-DUID_PUBKEY_BYTES=${UID_PUBKEY_BYTES})
 
-if (WIN32)
-  add_definitions(-DWIN32FAFUID)
-endif()
-
 # macOS does not support fully-static linking
 if(NOT APPLE)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")

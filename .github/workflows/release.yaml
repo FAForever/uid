@@ -9,7 +9,9 @@ on:
 
 jobs:
   build-windows:
-    runs-on: ubuntu-latest
+    # MXE's packages are for Ubuntu 20.04, and Ubuntu 26.04 (ubuntu-latest
+    # since October 2026) no longer has all of MXE's requirements below
+    runs-on: ubuntu-24.04
     environment: release
     env:
       PUB_KEY: ${{ secrets.UID_PUBLIC_KEY_PEM }}
@@ -93,6 +95,64 @@ jobs:
           name: faf-uid-windows
           path: build/faf-uid.exe
 
+  build-windows-arm64:
+    runs-on: windows-11-arm
+    environment: release
+    env:
+      PUB_KEY: ${{ secrets.UID_PUBLIC_KEY_PEM }}
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # MXE has no ARM64 target, so this job builds natively with MSYS2's
+      # CLANGARM64 environment, which has static jsoncpp, cryptopp and ICU.
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANGARM64
+          install: >-
+            mingw-w64-clang-aarch64-cc
+            mingw-w64-clang-aarch64-cmake
+            mingw-w64-clang-aarch64-ninja
+            mingw-w64-clang-aarch64-pkgconf
+            mingw-w64-clang-aarch64-jsoncpp
+            mingw-w64-clang-aarch64-crypto++
+            mingw-w64-clang-aarch64-icu
+            mingw-w64-clang-aarch64-python
+            openssl
+
+      - name: Write PUB key into file
+        run: echo "$PUB_KEY" > faf_pub.pem
+
+      - name: Build
+        run: |
+          # ICU 75 and later need C++17; CMake puts this standard after the
+          # -std=c++11 of CMakeLists.txt, so it wins. U_STATIC_IMPLEMENTATION
+          # makes ICU's headers link its static library instead of its DLL,
+          # so the exe stays a single file like the x64 one.
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_STANDARD=17 \
+            -DCMAKE_CXX_EXTENSIONS=OFF \
+            -DCMAKE_CXX_FLAGS=-DU_STATIC_IMPLEMENTATION \
+            -DCRYPTOPP_LIBRARIES=$MINGW_PREFIX/lib/libcryptopp.a \
+            -DCRYPTOPP_INCLUDE_DIRS=$MINGW_PREFIX/include \
+            -DUID_SKIP_LEGACY=On \
+            -DUID_PUBKEY_BYTES=$(python encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
+            -B build
+          cmake --build build
+          # Next to the x64 faf-uid.exe in the release
+          mv build/faf-uid.exe build/faf-uid-arm64.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: faf-uid-windows-arm64
+          path: build/faf-uid-arm64.exe
+
   build-linux:
     runs-on: ubuntu-latest
     environment: release
@@ -153,6 +213,9 @@ jobs:
       PUB_KEY: ${{ secrets.UID_PUBLIC_KEY_PEM }}
       JSONCPP_VERSION: 1.7.7
       CRYPTOPP_VERSION: 8_9_0
+      # The compilers and CMake read this. Without it the binary needs the
+      # runner's own macOS version; 11 is the first one on Apple Silicon.
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
 
     steps:
       - uses: actions/checkout@v4
@@ -164,8 +227,14 @@ jobs:
         run: |
           wget https://github.com/open-source-parsers/jsoncpp/archive/$JSONCPP_VERSION.tar.gz -O jsoncpp.tar.gz
           tar xfz jsoncpp.tar.gz
+          # jsoncpp makes -Wconversion an error for Clang, and newer Apple
+          # clang (AppleClang 21 on macOS 26) counts jsoncpp's int-to-double
+          # range checks in it. The per-config flags come after jsoncpp's
+          # own, so the exception goes there.
           cmake \
             -DCMAKE_BUILD_TYPE=MinSizeRel \
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=-Os -DNDEBUG -Wno-implicit-int-float-conversion" \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
             -DBUILD_STATIC_LIBS=ON \
@@ -180,12 +249,20 @@ jobs:
           unzip ./cryptopp.zip
           mv cryptopp-CRYPTOPP_$CRYPTOPP_VERSION cryptopp
           # cryptopp 8.9.0's GNUmakefile needs explicit arch/stdlib flags on
-          # Apple Silicon, its auto-detection is insufficient there.
-          make -C cryptopp -f GNUmakefile CXXFLAGS='-DNDEBUG -O3 -stdlib=libc++ -arch arm64' libcryptopp.a
+          # Apple Silicon, its auto-detection is insufficient there. It picks
+          # its SIMD sources for one architecture, so each slice is built on
+          # its own and the two are joined with lipo.
+          for arch in arm64 x86_64; do
+            make -C cryptopp -f GNUmakefile CXXFLAGS="-DNDEBUG -O3 -stdlib=libc++ -arch $arch" libcryptopp.a
+            mv cryptopp/libcryptopp.a libcryptopp-$arch.a
+            make -C cryptopp -f GNUmakefile clean
+          done
+          lipo -create libcryptopp-arm64.a libcryptopp-x86_64.a -output cryptopp/libcryptopp.a
 
       - name: Build
         run: |
           cmake \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
             -DJSONCPP_LIBRARIES=$(pwd)/jsoncpp-build/src/lib_json/libjsoncpp.a \
             -DJSONCPP_INCLUDE_DIRS=$(pwd)/jsoncpp-$JSONCPP_VERSION/include \
             -DCRYPTOPP_LIBRARIES=$(pwd)/cryptopp/libcryptopp.a \
@@ -194,6 +271,9 @@ jobs:
             -DUID_PUBKEY_BYTES=$(./encode_openssl_modulus.py $(openssl rsa -noout -inform PEM -in faf_pub.pem -pubin -modulus)) \
             -B build
           make -C build
+          # A universal binary for Apple Silicon and Intel Macs; fails the
+          # job if a slice is missing.
+          lipo build/faf-uid -verify_arch arm64 x86_64
           # Rename so this artifact's file doesn't collide with Linux's
           # `faf-uid` when both are extracted into release-artifacts/.
           mv build/faf-uid build/faf-uid-macos
@@ -205,7 +285,7 @@ jobs:
           path: build/faf-uid-macos
 
   create-release:
-    needs: [build-windows, build-linux, build-macos]
+    needs: [build-windows, build-windows-arm64, build-linux, build-macos]
     runs-on: ubuntu-latest
 
     steps:
@@ -215,6 +295,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: faf-uid-windows
+          path: release-artifacts/
+
+      - name: Download Windows ARM64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: faf-uid-windows-arm64
           path: release-artifacts/
 
       - name: Download Linux artifact

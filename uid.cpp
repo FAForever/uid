@@ -134,15 +134,11 @@ int main(int argc, char *argv[])
               new CryptoPP::FileSink(std::cout), false /*insertLineBreaks*/
           );
       b.Put(paddingSize);
-#ifdef WIN32FAFUID
-      b.Put(reinterpret_cast<const byte*>(iv_b64.c_str()), iv_b64.size());
-      b.Put(reinterpret_cast<const byte*>(json_string_encrypted_b64.c_str()), json_string_encrypted_b64.size());
-      b.Put(reinterpret_cast<const byte*>(aes_key_encrypted_base64.c_str()), aes_key_encrypted_base64.size());
-#else
-      b.Put(reinterpret_cast<const CryptoPP::byte*>(iv_b64.c_str()), iv_b64.size());
-      b.Put(reinterpret_cast<const CryptoPP::byte*>(json_string_encrypted_b64.c_str()), json_string_encrypted_b64.size());
-      b.Put(reinterpret_cast<const CryptoPP::byte*>(aes_key_encrypted_base64.c_str()), aes_key_encrypted_base64.size());
-#endif
+      /* Crypto++'s byte is unsigned char; MXE's Crypto++ predates
+         CryptoPP::byte, and Crypto++ 6.0 and later have no global byte */
+      b.Put(reinterpret_cast<const unsigned char*>(iv_b64.c_str()), iv_b64.size());
+      b.Put(reinterpret_cast<const unsigned char*>(json_string_encrypted_b64.c_str()), json_string_encrypted_b64.size());
+      b.Put(reinterpret_cast<const unsigned char*>(aes_key_encrypted_base64.c_str()), aes_key_encrypted_base64.size());
       b.MessageEnd();
     }
   }
